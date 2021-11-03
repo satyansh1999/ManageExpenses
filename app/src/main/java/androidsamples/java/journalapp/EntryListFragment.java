@@ -36,6 +36,9 @@ public class EntryListFragment extends Fragment {
   private EntryListViewModel mEntryListViewModel;
   private Callbacks mCallbacks = null;
   private String group;
+  private double grp_total = 0;
+  private TextView tv;
+
   @SuppressLint("StaticFieldLeak")
   public static NavController navController;
 
@@ -52,6 +55,7 @@ public class EntryListFragment extends Fragment {
   public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.fragment_entry_list, container, false);
 
+    tv = view.findViewById(R.id.group_total);
     FloatingActionButton fab = view.findViewById(R.id.btn_add_entry);
     fab.setOnClickListener(this::addNewEntry);
 
@@ -172,6 +176,11 @@ public class EntryListFragment extends Fragment {
     @SuppressLint("NotifyDataSetChanged")
     public void setEntries(List<JournalEntry> entries) {
       mEntries = entries;
+      grp_total = 0;
+      for(int i = 0 ; i < entries.size() ; i++ ){
+        grp_total += entries.get(i).getAmount();
+      }
+      tv.setText(String.valueOf(grp_total));
       notifyDataSetChanged();
     }
   }
