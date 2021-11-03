@@ -11,4 +11,9 @@
   <string name="share">Share</string>
   <string name="info">Information</string>
   <string name="delete">Delete</string>
+  <string name="group">Group</string>
+  <string name="rs">Rs.</string>
+  <string name="amount">Amount</string>
+  <string name="total">Total :</string>
+  <string name="edit">Edit</string>
 </resources>

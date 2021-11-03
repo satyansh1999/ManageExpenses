@@ -10,7 +10,7 @@
       android:id="@+id/total_tv"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:text="Total : "
+      android:text="@string/total"
       android:paddingTop="10dp"
       android:paddingHorizontal="10dp"
       android:textStyle="bold"

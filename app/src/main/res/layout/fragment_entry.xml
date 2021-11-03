@@ -38,14 +38,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="0.2"
-        android:text="Group"
+        android:text="@string/group"
         android:textStyle="italic"/>
 
     <TextView
         android:id="@+id/txt_rupee"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Rs. "
+        android:text="@string/rs"
         android:textStyle="bold|italic" />
 
     <TextView
@@ -53,7 +53,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="0.2"
-        android:text="Amount"
+        android:text="@string/amount"
         android:textStyle="bold|italic" />
   </LinearLayout>
 </LinearLayout>
