@@ -5,7 +5,7 @@
     android:layout_margin="4dp"
     android:background="@color/design_default_color_secondary"
     android:orientation="vertical"
-    android:backgroundTint="#65FFFFFF"
+    android:backgroundTint="#EFD9CE"
     android:paddingHorizontal="10dp"
     android:paddingVertical="6dp">
 
@@ -15,6 +15,7 @@
       android:layout_height="wrap_content"
       android:padding="2dp"
       android:text="@string/title_label"
+      android:textColor="#25283D"
       android:letterSpacing="0.1"
       android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
@@ -30,6 +31,7 @@
         android:layout_weight="0.55"
         android:padding="2dp"
         android:text="@string/date"
+        android:textColor="#25283D"
         android:textAllCaps="true"
         android:textStyle="italic" />
 
@@ -39,14 +41,8 @@
         android:layout_height="wrap_content"
         android:layout_weight="0.2"
         android:text="@string/group"
+        android:textColor="#25283D"
         android:textStyle="italic"/>
-
-    <TextView
-        android:id="@+id/txt_rupee"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/rs"
-        android:textStyle="bold|italic" />
 
     <TextView
         android:id="@+id/txt_item_amount"
@@ -54,6 +50,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="0.2"
         android:text="@string/amount"
+        android:textColor="#25283D"
         android:textStyle="bold|italic" />
   </LinearLayout>
 </LinearLayout>

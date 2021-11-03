@@ -33,9 +33,9 @@ public class MainActivity extends AppCompatActivity implements EntryGroupsFragme
   }
 
   @Override
-  public void onGroupAdded(UUID id) {
-    Log.d(TAG, "Group Added: " + id);
-    NavDirections action = EntryGroupsFragmentDirections.groupAddedAction(id,false, "");
+  public void onGroupAdded() {
+    // Log.d(TAG, "Group Added: " + id);
+    NavDirections action = EntryGroupsFragmentDirections.groupAddedAction(false, "");
     EntryGroupsFragment.navController.navigate(action);
   }
 

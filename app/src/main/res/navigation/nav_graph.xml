@@ -53,9 +53,6 @@
       android:label="fragment_group_details"
       tools:layout="@layout/fragment_group_details">
     <argument
-        android:name="id"
-        app:argType="java.util.UUID" />
-    <argument
         android:name="edit"
         app:argType="boolean" />
     <argument

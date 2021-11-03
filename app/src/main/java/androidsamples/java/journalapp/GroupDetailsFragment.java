@@ -38,53 +38,32 @@ public class GroupDetailsFragment extends Fragment {
         mGroupDetailsViewModel = new ViewModelProvider(requireActivity()).get(GroupDetailsViewModel.class);
         edit = GroupDetailsFragmentArgs.fromBundle(getArguments()).getEdit();
         grp_old = GroupDetailsFragmentArgs.fromBundle(getArguments()).getGrpOld();
-        if(!edit) {
-            UUID entryId = GroupDetailsFragmentArgs.fromBundle(getArguments()).getId();
-            mGroupDetailsViewModel.loadEntry(entryId);
-        }
     }
+
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_group_details, container, false);
         mEditTitle = view.findViewById(R.id.edit_title_group);
+        if(edit) mEditTitle.setText(grp_old);
         view.findViewById(R.id.btn_save_group).setOnClickListener(this::saveEntry);
         return view;
     }
 
-  @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        if(!edit) {
-            mGroupDetailsViewModel.getEntryLiveData().observe(requireActivity(),
-                    entry -> {
-                        this.mEntry = entry;
-                        if (entry != null) updateUI();
-                    });
-        }
-        else mEditTitle.setText(grp_old);
-    }
-
-    private void updateUI() {
-        mEditTitle.setText(mEntry.getGroup());
-    }
-
     private void saveEntry(View v) {
-        String str = mEditTitle.getText().toString();
+        String str = mEditTitle.getText().toString().trim();
         if(!edit) {
             Log.d(TAG, "Save button clicked");
-            if (mEntry == null) Log.d(TAG, "mEntry is null");
+            if(str.length() > 0) {
+                mEntry = new JournalEntry();
+                mEntry.setText("_");
+                mEntry.setGroup(str);
+                mGroupDetailsViewModel.saveEntry(mEntry);
+                Toast.makeText(getContext(), str + " created", Toast.LENGTH_SHORT).show();
+            }
             else {
-                if(str.length() > 0) {
-                    mEntry.setGroup(str);
-                    mGroupDetailsViewModel.saveEntry(mEntry);
-                    Toast.makeText(getContext(), str + " created", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    mGroupDetailsViewModel.deleteEntry(mEntry);
-                    Toast.makeText(getContext(), "Folder must have a name", Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(getContext(), "Folder must have a name", Toast.LENGTH_SHORT).show();
             }
         }
         else{
@@ -93,7 +72,7 @@ public class GroupDetailsFragment extends Fragment {
                 mGroupDetailsViewModel.updateGroup(grp_old, str);
                 Toast.makeText(getContext(), "Folder " + grp_old + " changed to " + str, Toast.LENGTH_SHORT).show();
             }
-            else                  Toast.makeText(getContext(), "Folder must have a name", Toast.LENGTH_SHORT).show();
+            else Toast.makeText(getContext(), "Folder must have a name", Toast.LENGTH_SHORT).show();
         }
         requireActivity().onBackPressed();
     }

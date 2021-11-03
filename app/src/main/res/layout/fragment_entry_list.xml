@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ffbbbb">
+    android:background="#25283D">
 
   <TextView
       android:id="@+id/total_tv"
@@ -15,6 +15,7 @@
       android:paddingHorizontal="10dp"
       android:textStyle="bold"
       android:textSize="25sp"
+      android:textColor="#EFD9CE"
       app:layout_constraintEnd_toStartOf="@id/group_total"
       app:layout_constraintTop_toTopOf="parent" />
 
@@ -27,6 +28,7 @@
       android:paddingStart="5dp"
       android:textStyle="bold"
       android:textSize="25sp"
+      android:textColor="#EFD9CE"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 

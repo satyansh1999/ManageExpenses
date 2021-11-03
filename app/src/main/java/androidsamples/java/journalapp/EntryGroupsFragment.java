@@ -61,10 +61,7 @@ public class EntryGroupsFragment extends Fragment{
     }
 
     public void addNewEntry(View view) {
-        JournalEntry entry = new JournalEntry();
-        entry.setText("_");
-        mEntryGroupsViewModel.insert(entry);
-        mCallbacks.onGroupAdded(entry.getUid());
+        mCallbacks.onGroupAdded();
     }
 
     @Override
@@ -80,7 +77,7 @@ public class EntryGroupsFragment extends Fragment{
     }
 
     interface GroupCallbacks {
-        void onGroupAdded(UUID id);
+        void onGroupAdded();
         void onGroupSelected(String grp);
     }
 
@@ -95,8 +92,7 @@ public class EntryGroupsFragment extends Fragment{
             itemView.setOnClickListener(this::launchJournalEntryFragment);
 
             itemView.findViewById(R.id.edit_group).setOnClickListener( v ->{
-                UUID id = UUID.randomUUID();
-                NavDirections action = EntryGroupsFragmentDirections.groupAddedAction(id,true, Group);
+                NavDirections action = EntryGroupsFragmentDirections.groupAddedAction(true, Group);
                 EntryGroupsFragment.navController.navigate(action);
             });
         }

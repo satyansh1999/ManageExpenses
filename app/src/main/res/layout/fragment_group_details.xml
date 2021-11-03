@@ -5,7 +5,7 @@
     android:id="@+id/layout_entry_detail"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ffffcc">
+    android:background="#EFD9CE">
 
 
     <TextView
@@ -31,7 +31,6 @@
         android:hint="@string/title_label"
         android:inputType="text"
         android:minHeight="48dp"
-        android:text="@string/title_label"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
