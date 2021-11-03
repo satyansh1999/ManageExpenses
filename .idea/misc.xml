@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/studyMaterial/7th Semester/Software Development for Portable Devices/Assignments/A3/a3-journalapp-satyansh1999/app/src/main/res/layout/activity_main.xml" value="0.2598958333333333" />
+        <entry key="..\:/studyMaterial/7th Semester/Software Development for Portable Devices/Assignments/A3/a3-journalapp-satyansh1999/app/src/main/res/layout/fragment_entry.xml" value="0.2598958333333333" />
+        <entry key="..\:/studyMaterial/7th Semester/Software Development for Portable Devices/Assignments/A3/a3-journalapp-satyansh1999/app/src/main/res/layout/fragment_entry_details.xml" value="0.2598958333333333" />
+        <entry key="..\:/studyMaterial/7th Semester/Software Development for Portable Devices/Assignments/A3/a3-journalapp-satyansh1999/app/src/main/res/layout/fragment_entry_list.xml" value="0.2598958333333333" />
+        <entry key="..\:/studyMaterial/7th Semester/Software Development for Portable Devices/Assignments/A3/a3-journalapp-satyansh1999/app/src/main/res/menu/fragment_entry_detail.xml" value="0.2598958333333333" />
+        <entry key="..\:/studyMaterial/7th Semester/Software Development for Portable Devices/Assignments/A3/a3-journalapp-satyansh1999/app/src/main/res/menu/fragment_list_detail.xml" value="0.2598958333333333" />
+        <entry key="..\:/studyMaterial/7th Semester/Software Development for Portable Devices/Assignments/Test/a3-journalapp-satyansh1999/app/src/main/res/layout/activity_main.xml" value="0.1" />
+        <entry key="..\:/studyMaterial/7th Semester/Software Development for Portable Devices/Assignments/Test/a3-journalapp-satyansh1999/app/src/main/res/layout/fragment_entry_details.xml" value="0.14492753623188406" />
+        <entry key="..\:/studyMaterial/7th Semester/Software Development for Portable Devices/Assignments/Test/a3-journalapp-satyansh1999/app/src/main/res/layout/fragment_entry_list.xml" value="0.1" />
+        <entry key="..\:/studyMaterial/7th Semester/Software Development for Portable Devices/Assignments/Test/a3-journalapp-satyansh1999/app/src/main/res/layout/journal_info.xml" value="0.2563405797101449" />
+        <entry key="..\:/studyMaterial/7th Semester/Software Development for Portable Devices/Assignments/Test/a3-journalapp-satyansh1999/app/src/main/res/menu/fragment_entry_detail.xml" value="0.2598958333333333" />
+        <entry key="..\:/studyMaterial/7th Semester/Software Development for Portable Devices/Assignments/Test/a3-journalapp-satyansh1999/app/src/main/res/menu/fragment_entry_list.xml" value="0.2598958333333333" />
+        <entry key="..\:/studyMaterial/7th Semester/Software Development for Portable Devices/Assignments/Test/a3-journalapp-satyansh1999/app/src/main/res/menu/fragment_list_detail.xml" value="0.2598958333333333" />
+        <entry key="..\:/studyMaterial/Projects/a3-journalapp-satyansh1999/app/src/main/res/layout/activity_main.xml" value="0.2916666666666667" />
+        <entry key="..\:/studyMaterial/Projects/a3-journalapp-satyansh1999/app/src/main/res/layout/fragment_entry.xml" value="0.208955223880597" />
+        <entry key="..\:/studyMaterial/Projects/a3-journalapp-satyansh1999/app/src/main/res/layout/fragment_entry_details.xml" value="0.264" />
+        <entry key="..\:/studyMaterial/Projects/a3-journalapp-satyansh1999/app/src/main/res/layout/fragment_entry_groups.xml" value="0.2210144927536232" />
+        <entry key="..\:/studyMaterial/Projects/a3-journalapp-satyansh1999/app/src/main/res/layout/fragment_entry_list.xml" value="0.2598958333333333" />
+        <entry key="..\:/studyMaterial/Projects/a3-journalapp-satyansh1999/app/src/main/res/layout/fragment_group.xml" value="0.264" />
+        <entry key="..\:/studyMaterial/Projects/a3-journalapp-satyansh1999/app/src/main/res/layout/fragment_group_details.xml" value="0.2598958333333333" />
+        <entry key="..\:/studyMaterial/Projects/a3-journalapp-satyansh1999/app/src/main/res/layout/journal_info.xml" value="0.2598958333333333" />
+        <entry key="..\:/studyMaterial/Projects/a3-journalapp-satyansh1999/app/src/main/res/menu/fragment_entry_detail.xml" value="0.2598958333333333" />
+        <entry key="..\:/studyMaterial/Projects/a3-journalapp-satyansh1999/app/src/main/res/menu/fragment_entry_list.xml" value="0.2" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.246875" />
+        <entry key="app/src/main/res/layout/fragment_date_picker.xml" value="0.2569230769230769" />
+        <entry key="app/src/main/res/layout/fragment_entry.xml" value="0.2609375" />
+        <entry key="app/src/main/res/layout/fragment_entry_details.xml" value="0.26979166666666665" />
+        <entry key="app/src/main/res/layout/fragment_entry_list.xml" value="0.2609375" />
+        <entry key="app/src/main/res/layout/fragment_time_picker.xml" value="0.2569230769230769" />
+        <entry key="app/src/main/res/xml/root_preferences.xml" value="0.13489583333333333" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>

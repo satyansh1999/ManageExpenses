@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/entryGroupFragment">
+
+  <fragment
+      android:id="@+id/entryListFragment"
+      android:name="androidsamples.java.journalapp.EntryListFragment"
+      android:label="fragment_entry_list"
+      tools:layout="@layout/fragment_entry_list">
+    <action
+        android:id="@+id/addEntryAction"
+        app:destination="@id/entryDetailsFragment" />
+    <argument
+        android:name="group"
+        app:argType="string" />
+  </fragment>
+
+  <fragment
+      android:id="@+id/entryDetailsFragment"
+      android:name="androidsamples.java.journalapp.EntryDetailsFragment"
+      android:label="fragment_entry_details"
+      tools:layout="@layout/fragment_entry_details">
+    <argument
+        android:name="entryId"
+        app:argType="java.util.UUID" />
+    <action
+        android:id="@+id/datePickerAction"
+        app:destination="@id/datePickerDialog" />
+  </fragment>
+
+  <dialog
+      android:id="@+id/datePickerDialog"
+      android:name="androidsamples.java.journalapp.DatePickerFragment" />
+
+  <fragment
+      android:id="@+id/entryGroupFragment"
+      android:name="androidsamples.java.journalapp.EntryGroupsFragment"
+      android:label="fragment_entry_groups"
+      tools:layout="@layout/fragment_entry_groups">
+    <action
+        android:id="@+id/groupSelectedAction"
+        app:destination="@id/entryListFragment" />
+    <action
+        android:id="@+id/groupAddedAction"
+        app:destination="@id/GroupDetailsFragment" />
+  </fragment>
+  <fragment
+      android:id="@+id/GroupDetailsFragment"
+      android:name="androidsamples.java.journalapp.GroupDetailsFragment"
+      android:label="fragment_group_details"
+      tools:layout="@layout/fragment_group_details">
+    <argument
+        android:name="id"
+        app:argType="java.util.UUID" />
+    <argument
+        android:name="edit"
+        app:argType="boolean" />
+    <argument
+        android:name="grp_old"
+        app:argType="string" />
+  </fragment>
+</navigation>
