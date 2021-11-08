@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="androidsamples.java.journalapp">
+    package="androidsamples.java.DigitalDiary">
 
   <application
-      android:name=".JournalApplication"
+      android:name="androidsamples.java.DigitalDiary.JournalApplication"
       android:allowBackup="true"
       android:icon="@mipmap/ic_launcher"
       android:label="DigitalDiary"
@@ -12,7 +12,7 @@
       android:theme="@style/Theme.JournalApp"
       android:fullBackupContent="@xml/backup_descriptor">
     <activity
-        android:name=".MainActivity"
+        android:name="androidsamples.java.DigitalDiary.MainActivity"
         android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />

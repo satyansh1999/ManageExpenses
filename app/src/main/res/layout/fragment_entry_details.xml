@@ -56,7 +56,7 @@
       android:autofillHints="@string/amount"
       android:ems="10"
       android:hint="@string/amount"
-      android:inputType="text"
+      android:inputType="numberDecimal"
       android:minHeight="48dp"
       android:textAlignment="center"
       app:layout_constraintEnd_toEndOf="parent"
