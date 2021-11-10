@@ -23,7 +23,7 @@ public interface JournalEntryDAO {
     @Query("SELECT * from diary_table WHERE id=(:id)")
     LiveData<JournalEntry> getEntry(java.util.UUID id);
 
-    @Query("SELECT * from diary_table where `group`=(:grp) and text != '_' order by amount desc")
+    @Query("SELECT * from diary_table where `group`=(:grp) and text != '_'")
     LiveData<List<JournalEntry>> getAllEntriesOfGroup(String grp);
 
     @Query("SELECT DISTINCT `group` from diary_table")

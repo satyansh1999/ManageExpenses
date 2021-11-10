@@ -80,7 +80,7 @@ public class EntryDetailsFragment extends Fragment {
     }
     else{
       Calendar cal = Calendar.getInstance();
-      SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, MMM-dd-yyyy");
+      SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, MMM dd, yyyy");
       mEditDate.setText(simpleDateFormat.format(cal.getTime()));
     }
   }

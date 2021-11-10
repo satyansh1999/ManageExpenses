@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -181,6 +182,7 @@ public class EntryListFragment extends Fragment {
     @SuppressLint("NotifyDataSetChanged")
     public void setEntries(List<JournalEntry> entries) {
       mEntries = entries;
+      Collections.sort(mEntries,new entryCompare());
       grp_total = 0;
       for(int i = 0 ; i < entries.size() ; i++ ){
         grp_total += entries.get(i).getAmount();

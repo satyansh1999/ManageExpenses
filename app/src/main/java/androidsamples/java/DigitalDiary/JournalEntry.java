@@ -37,7 +37,7 @@ public class JournalEntry {
         mUid = UUID.randomUUID();
         mText = "";
         mGroup = "";
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, MMM-dd-yyyy");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, MMM dd, yyyy");
         mDate = simpleDateFormat.format(calendar.getTime());
         mAmount = 0.0;
     }
