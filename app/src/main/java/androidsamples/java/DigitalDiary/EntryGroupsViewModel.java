@@ -21,10 +21,10 @@ public class EntryGroupsViewModel extends ViewModel {
     }
 
     public void update(JournalEntry entry) {
-        mRepository.insert(entry);
+        mRepository.update(entry);
     }
 
     public void delete(JournalEntry entry) {
-        mRepository.insert(entry);
+        mRepository.delete(entry);
     }
 }
