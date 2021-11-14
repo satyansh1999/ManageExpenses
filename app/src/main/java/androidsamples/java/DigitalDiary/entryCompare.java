@@ -31,7 +31,7 @@ public class entryCompare implements Comparator<JournalEntry> {
 
         int a1 = month.get(str1.substring(5, 8));
         int b1 = month.get(str2.substring(5, 8));
-        if(a1 != b2) return a1 - b1;
+        if(a1 != b1) return a1 - b1;
 
         int a = Integer.parseInt(str1.substring(9,11));
         int b = Integer.parseInt(str2.substring(9,11));
