@@ -22,7 +22,7 @@ import androidx.lifecycle.ViewModelProvider;
 public class GroupDetailsFragment extends Fragment {
     private static final String TAG = "GroupDetailsFragment";
     private EditText mEditTitle;
-    private GroupDetailsViewModel mGroupDetailsViewModel;
+    private AppViewModel mAppViewModel;
     private JournalEntry mEntry;
     private boolean edit;
     private String grp_old;
@@ -32,7 +32,7 @@ public class GroupDetailsFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        mGroupDetailsViewModel = new ViewModelProvider(requireActivity()).get(GroupDetailsViewModel.class);
+        mAppViewModel = new ViewModelProvider(requireActivity()).get(AppViewModel.class);
         edit = GroupDetailsFragmentArgs.fromBundle(getArguments()).getEdit();
         grp_old = GroupDetailsFragmentArgs.fromBundle(getArguments()).getGrpOld();
     }
@@ -56,7 +56,7 @@ public class GroupDetailsFragment extends Fragment {
                 mEntry = new JournalEntry();
                 mEntry.setText("_");
                 mEntry.setGroup(str);
-                mGroupDetailsViewModel.saveEntry(mEntry);
+                mAppViewModel.insert(mEntry);
                 Toast.makeText(getContext(), str + " created", Toast.LENGTH_SHORT).show();
             }
             else {
@@ -66,7 +66,7 @@ public class GroupDetailsFragment extends Fragment {
         else{
             Log.d(TAG, "Edit button clicked");
             if(str.length() > 0) {
-                mGroupDetailsViewModel.updateGroup(grp_old, str);
+                mAppViewModel.updateGroup(grp_old, str);
                 Toast.makeText(getContext(), "Folder " + grp_old + " changed to " + str, Toast.LENGTH_SHORT).show();
             }
             else Toast.makeText(getContext(), "Folder must have a name", Toast.LENGTH_SHORT).show();

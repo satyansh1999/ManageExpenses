@@ -5,7 +5,7 @@
     android:id="@+id/layout_entry_detail"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#EFD9CE">
+    android:background="@color/fragment_primary">
 
 
     <TextView
@@ -14,6 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="160dp"
         android:text="@string/record_entry"
+        android:textColor="@color/fragment_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
@@ -32,6 +33,8 @@
         android:inputType="text"
         android:minHeight="48dp"
         android:textAlignment="center"
+        android:textColor="@color/fragment_text"
+        android:textColorHint="@color/fragment_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -43,6 +46,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/save_label"
+        android:textColor="@color/fragment_button_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"

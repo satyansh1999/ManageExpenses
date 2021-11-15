@@ -24,7 +24,7 @@ import java.util.List;
 
 public class EntryGroupsFragment extends Fragment{
     private static final String TAG = "EntryGroupsFragment";
-    private EntryGroupsViewModel mEntryGroupsViewModel;
+    private AppViewModel mAppViewModel;
     private GroupCallbacks mCallbacks = null;
     @SuppressLint("StaticFieldLeak")
     public static NavController navController;
@@ -33,7 +33,7 @@ public class EntryGroupsFragment extends Fragment{
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        mEntryGroupsViewModel = new ViewModelProvider(this).get(EntryGroupsViewModel.class);
+        mAppViewModel = new ViewModelProvider(this).get(AppViewModel.class);
     }
 
     @Nullable
@@ -49,7 +49,7 @@ public class EntryGroupsFragment extends Fragment{
         EntryListAdapter adapter = new EntryListAdapter(getActivity());
         entriesList.setAdapter(adapter);
 
-        mEntryGroupsViewModel.getAllGroups().observe(requireActivity(), adapter::setEntries);
+        mAppViewModel.getAllGroups().observe(requireActivity(), adapter::setEntries);
         return view;
     }
 

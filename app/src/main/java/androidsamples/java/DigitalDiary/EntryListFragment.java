@@ -34,7 +34,7 @@ import java.util.UUID;
  */
 public class EntryListFragment extends Fragment {
   private static final String TAG = "EntryListFragment";
-  private EntryListViewModel mEntryListViewModel;
+  private AppViewModel mAppViewModel;
   private Callbacks mCallbacks = null;
   private String group;
   private double grp_total = 0;
@@ -47,7 +47,7 @@ public class EntryListFragment extends Fragment {
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setHasOptionsMenu(true);
-    mEntryListViewModel = new ViewModelProvider(this).get(EntryListViewModel.class);
+    mAppViewModel = new ViewModelProvider(this).get(AppViewModel.class);
     group = EntryListFragmentArgs.fromBundle(getArguments()).getGroup();
   }
 
@@ -65,7 +65,7 @@ public class EntryListFragment extends Fragment {
     EntryListAdapter adapter = new EntryListAdapter(getActivity());
     entriesList.setAdapter(adapter);
 
-    mEntryListViewModel.getAllEntriesOfGroup(group).observe(requireActivity(), adapter::setEntries);
+    mAppViewModel.getAllEntriesOfGroup(group).observe(requireActivity(), adapter::setEntries);
     return view;
   }
 
@@ -106,7 +106,7 @@ public class EntryListFragment extends Fragment {
       alert.setTitle("Delete Folder");
       alert.setMessage("Are you sure you want to delete " + group + "?");
       alert.setPositiveButton(android.R.string.yes, (dialog, which) -> {
-        mEntryListViewModel.deleteGroup(group);
+        mAppViewModel.deleteGroup(group);
         Toast.makeText(getContext(), group + " deleted", Toast.LENGTH_SHORT).show();
         requireActivity().onBackPressed();
       });

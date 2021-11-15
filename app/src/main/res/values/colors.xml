@@ -1,13 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <color name="purple_200">#FFBB86FC</color>
-  <color name="purple_500">#FF6200EE</color>
-  <color name="purple_700">#FF3700B3</color>
-  <color name="teal_200">#FF03DAC5</color>
-  <color name="teal_700">#FF018786</color>
   <color name="black">#FF000000</color>
   <color name="white">#FFFFFFFF</color>
+
+  <color name="fragment_text">#D8D5E8</color>
+  <color name="fragment_button_text">#D8D5E8</color>
+  <color name="fragment_button">#7C9082</color>
+  <color name="fragment_background">#1B2A41</color>
+  <color name="fragment_primary">#263B4E</color>
+
+  <!--
+  <color name="fragment_text">#D8D5E8</color>
+  <color name="fragment_button_text">#D8D5E8</color>
+  <color name="fragment_button">#7C9082</color>
+  <color name="fragment_background">#1B2A41</color>
+  <color name="fragment_primary">#263B4E</color>
+
+  <color name="fragment_text">#88C3A9</color>
+  <color name="fragment_button_text">#88C3A9</color>
+  <color name="fragment_background">#041F1E</color>
+  <color name="fragment_button">#F7DBA7</color>
+  <color name="fragment_primary">#142925</color>
+
+  <color name="fragment_background">#25283D</color>
+  <color name="fragment_button_text">#EFD9CE</color>
   <color name="fragment_text">#25283D</color>
   <color name="fragment_button">#9E2A2B</color>
   <color name="fragment_primary">#EFD9CE</color>
+
+  <color name="fragment_text">#4B4A50</color>
+  <color name="fragment_button_text">#4B4A50</color>
+  <color name="fragment_background">#EDEBF1</color>
+  <color name="fragment_button">#FCFDAD</color>
+  <color name="fragment_primary">#DFDBEB</color>
+
+  <color name="fragment_text">#CBD8CB</color>
+  <color name="fragment_button_text">#CBD8CB</color>
+  <color name="fragment_background">#1F2112</color>
+  <color name="fragment_button">#51583B</color>
+  <color name="fragment_primary">#51583B</color>
+
+   <color name="fragment_text">#433E0E</color>
+   <color name="fragment_button_text">#433E0E</color>
+   <color name="fragment_background">#433E0E</color>
+   <color name="fragment_button">#7C9082</color>
+   <color name="fragment_primary">#A7A284</color>
+   -->
 </resources>

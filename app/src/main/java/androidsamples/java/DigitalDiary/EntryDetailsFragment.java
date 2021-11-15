@@ -32,7 +32,7 @@ public class EntryDetailsFragment extends Fragment {
   private static final String TAG = "EntryDetailsFragment";
   private EditText mEditTitle, mAmount;
   private Button mEditDate;
-  private EntryDetailsViewModel mEntryDetailsViewModel;
+  private AppViewModel mAppViewModel;
   private JournalEntry mEntry;
   private boolean edit;
   private String group;
@@ -42,14 +42,14 @@ public class EntryDetailsFragment extends Fragment {
     super.onCreate(savedInstanceState);
     setHasOptionsMenu(true);
 
-    mEntryDetailsViewModel = new ViewModelProvider(requireActivity()).get(EntryDetailsViewModel.class);
+    mAppViewModel = new ViewModelProvider(requireActivity()).get(AppViewModel.class);
 
     UUID entryId = EntryDetailsFragmentArgs.fromBundle(getArguments()).getEntryId();
     edit = EntryDetailsFragmentArgs.fromBundle(getArguments()).getEdit();
     group = EntryDetailsFragmentArgs.fromBundle(getArguments()).getGroup();
     Log.d(TAG, "Loading entry: " + entryId);
 
-    if(edit) mEntryDetailsViewModel.loadEntry(entryId);
+    if(edit) mAppViewModel.loadEntry(entryId);
   }
 
   @Nullable
@@ -72,7 +72,7 @@ public class EntryDetailsFragment extends Fragment {
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     if(edit) {
-      mEntryDetailsViewModel.getEntryLiveData().observe(requireActivity(),
+      mAppViewModel.getEntryLiveData().observe(requireActivity(),
               entry -> {
                 this.mEntry = entry;
                 if (entry != null) updateUI();
@@ -100,7 +100,7 @@ public class EntryDetailsFragment extends Fragment {
         alert.setTitle("Delete Journal Entry");
         alert.setMessage("Are you sure you want to delete?");
         alert.setPositiveButton(android.R.string.yes, (dialog, which) -> {
-          mEntryDetailsViewModel.deleteEntry(mEntry);
+          mAppViewModel.delete(mEntry);
           Toast.makeText(getContext(), "Item deleted", Toast.LENGTH_SHORT).show();
           requireActivity().onBackPressed();
         });
@@ -126,12 +126,12 @@ public class EntryDetailsFragment extends Fragment {
       String str = mAmount.getText().toString();
       double amt = 0.0;
       if (str.length() > 0) amt = Double.parseDouble(str);
-      if (amt == 0.0) mEntryDetailsViewModel.deleteEntry(mEntry);
+      if (amt == 0.0) mAppViewModel.delete(mEntry);
       else {
         mEntry.setText(mEditTitle.getText().toString());
         mEntry.setDate(mEditDate.getText().toString());
         mEntry.setAmount(amt);
-        mEntryDetailsViewModel.saveEntry(mEntry);
+        mAppViewModel.update(mEntry);
         Toast.makeText(getContext(), "Item added", Toast.LENGTH_SHORT).show();
       }
     }
@@ -145,7 +145,7 @@ public class EntryDetailsFragment extends Fragment {
         mEntry.setText(mEditTitle.getText().toString());
         mEntry.setDate(mEditDate.getText().toString());
         mEntry.setAmount(amt);
-        mEntryDetailsViewModel.insertEntry(mEntry);
+        mAppViewModel.insert(mEntry);
         Toast.makeText(getContext(), "Item added", Toast.LENGTH_SHORT).show();
       }
     }
