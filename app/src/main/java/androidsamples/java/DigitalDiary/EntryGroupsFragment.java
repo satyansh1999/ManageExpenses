@@ -1,19 +1,21 @@
 package androidsamples.java.DigitalDiary;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
-import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -60,7 +62,25 @@ public class EntryGroupsFragment extends Fragment{
     }
 
     public void addNewEntry(View view) {
-        mCallbacks.onGroupAdded();
+        //mCallbacks.onGroupAdded();
+        AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+        final View vi = getLayoutInflater().inflate(R.layout.fragment_group_details,null);
+        EditText titleG = vi.findViewById(R.id.edit_title_group);
+
+        alert.setPositiveButton(android.R.string.yes, (dialog, which) -> {
+            String str = titleG.getText().toString().trim();
+            if(str.length() > 0) {
+                JournalEntry mEntry = new JournalEntry();
+                mEntry.setText("_");
+                mEntry.setGroup(str);
+                mAppViewModel.insert(mEntry);
+                Toast.makeText(getContext(), str + " created", Toast.LENGTH_SHORT).show();
+            }
+            else Toast.makeText(getContext(), "Folder must have a name", Toast.LENGTH_SHORT).show();
+        });
+        alert.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss());
+        alert.setView(vi);
+        alert.create().show();
     }
 
     @Override
@@ -76,7 +96,6 @@ public class EntryGroupsFragment extends Fragment{
     }
 
     interface GroupCallbacks {
-        void onGroupAdded();
         void onGroupSelected(String grp);
     }
 
@@ -91,8 +110,22 @@ public class EntryGroupsFragment extends Fragment{
             itemView.setOnClickListener(this::launchJournalEntryFragment);
 
             itemView.findViewById(R.id.edit_group).setOnClickListener( v ->{
-                NavDirections action = EntryGroupsFragmentDirections.groupAddedAction(true, Group);
-                EntryGroupsFragment.navController.navigate(action);
+                AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+                final View view = getLayoutInflater().inflate(R.layout.fragment_group_details,null);
+                EditText mEditTitle = view.findViewById(R.id.edit_title_group);
+                mEditTitle.setText(Group);
+
+                alert.setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                    String str = mEditTitle.getText().toString().trim();
+                    if(str.length() > 0) {
+                        mAppViewModel.updateGroup(Group, str);
+                        Toast.makeText(getContext(), "Folder " + Group + " changed to " + str, Toast.LENGTH_SHORT).show();
+                    }
+                    else Toast.makeText(getContext(), "Folder must have a name", Toast.LENGTH_SHORT).show();
+                });
+                alert.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss());
+                alert.setView(view);
+                alert.create().show();
             });
         }
 

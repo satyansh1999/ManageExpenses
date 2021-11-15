@@ -5,16 +5,16 @@
     android:id="@+id/layout_entry_detail"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/fragment_primary">
+    android:background="@color/white">
 
 
     <TextView
         android:id="@+id/record_entry1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="160dp"
+        android:layout_marginTop="20dp"
         android:text="@string/record_entry"
-        android:textColor="@color/fragment_text"
+        android:textColor="@color/fragment_primary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
@@ -33,23 +33,11 @@
         android:inputType="text"
         android:minHeight="48dp"
         android:textAlignment="center"
-        android:textColor="@color/fragment_text"
+        android:textColor="@color/fragment_primary"
         android:textColorHint="@color/fragment_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/record_entry1" />
-
-    <Button
-        android:id="@+id/btn_save_group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/save_label"
-        android:textColor="@color/fragment_button_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edit_title_group" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
