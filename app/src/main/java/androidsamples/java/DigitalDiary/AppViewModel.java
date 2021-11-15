@@ -7,14 +7,15 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
+import java.util.List;
 import java.util.UUID;
 
-public class EntryDetailsViewModel extends ViewModel {
+public class AppViewModel extends ViewModel {
     private static final String TAG = "EntryDetailsViewModel";
     private final JournalRepository mRepository;
     private final MutableLiveData<UUID> entryIdLiveData = new MutableLiveData<>();
 
-    public EntryDetailsViewModel() {
+    public AppViewModel() {
         mRepository = JournalRepository.getInstance();
     }
 
@@ -22,24 +23,36 @@ public class EntryDetailsViewModel extends ViewModel {
         Log.d(TAG, "getEntryLiveData called");
         return Transformations.switchMap(entryIdLiveData, mRepository::getEntry);
     }
-
     void loadEntry(UUID entryId) {
         Log.d(TAG, "loading entry: " + entryId);
         entryIdLiveData.setValue(entryId);
     }
-
-    void saveEntry(JournalEntry entry) {
+    void update(JournalEntry entry) {
         Log.d(TAG, "Saving entry: " + entry.getUid());
         mRepository.update(entry);
     }
-
-    void insertEntry(JournalEntry entry) {
+    void insert(JournalEntry entry) {
         Log.d(TAG, "Insert entry: " + entry.getUid());
         mRepository.insert(entry);
     }
-
-    void deleteEntry(JournalEntry entry) {
+    void delete(JournalEntry entry) {
         Log.d(TAG, "Deleting entry: " + entry.getUid());
         mRepository.delete(entry);
+    }
+
+    public void deleteGroup(String grp) {
+        mRepository.deleteGroup(grp);
+    }
+    public LiveData<List<JournalEntry>> getAllEntriesOfGroup(String grp) {
+        return mRepository.getAllEntriesOfGroup(grp);
+    }
+
+    void updateGroup(String grp_old, String grp_new) {
+        Log.d(TAG, "Updating Group: " + grp_old);
+        mRepository.updateGroup(grp_old,grp_new);
+    }
+
+    public LiveData<List<String>> getAllGroups() {
+        return mRepository.getAllGroups();
     }
 }

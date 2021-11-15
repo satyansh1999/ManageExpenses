@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#25283D">
+    android:background="@color/fragment_background">
 
   <TextView
       android:id="@+id/total_tv"
@@ -14,7 +14,7 @@
       android:paddingHorizontal="10dp"
       android:textStyle="bold"
       android:textSize="25sp"
-      android:textColor="#EFD9CE"
+      android:textColor="@color/fragment_text"
       app:layout_constraintEnd_toStartOf="@id/group_total"
       app:layout_constraintTop_toTopOf="parent" />
 
@@ -27,7 +27,7 @@
       android:paddingStart="5dp"
       android:textStyle="bold"
       android:textSize="25sp"
-      android:textColor="#EFD9CE"
+      android:textColor="@color/fragment_text"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
