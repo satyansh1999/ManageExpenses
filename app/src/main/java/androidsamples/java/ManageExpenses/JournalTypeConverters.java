@@ -1,4 +1,4 @@
-package androidsamples.java.DigitalDiary;
+package androidsamples.java.ManageExpenses;
 
 import androidx.annotation.NonNull;
 import androidx.room.TypeConverter;

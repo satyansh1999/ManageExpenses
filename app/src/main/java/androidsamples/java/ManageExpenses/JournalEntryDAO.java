@@ -1,4 +1,4 @@
-package androidsamples.java.DigitalDiary;
+package androidsamples.java.ManageExpenses;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -29,8 +29,14 @@ public interface JournalEntryDAO {
     @Query("SELECT DISTINCT `group` from diary_table")
     LiveData<List<String>> getAllGroups();
 
+    @Query("SELECT * from diary_table")
+    LiveData<List<JournalEntry>> getAllEntries();
+
     @Query("Delete from diary_table where `group`=(:grp)")
     void deleteGroup(String grp);
+
+    @Query("Delete from diary_table")
+    void deleteAll();
 
     @Query("UPDATE diary_table SET `group`=(:grp_new) where `group`=(:grp_old)")
     void updateGroup(String grp_old, String grp_new);

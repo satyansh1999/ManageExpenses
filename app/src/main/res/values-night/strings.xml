@@ -16,4 +16,7 @@
   <string name="amount">Amount</string>
   <string name="total">Total :</string>
   <string name="edit">Edit</string>
+  <string name="export_data">Export Data</string>
+  <string name="import_data">Import Data</string>
+    <string name="delete_data">Delete Data</string>
 </resources>

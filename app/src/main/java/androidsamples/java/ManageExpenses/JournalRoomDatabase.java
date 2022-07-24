@@ -1,4 +1,4 @@
-package androidsamples.java.DigitalDiary;
+package androidsamples.java.ManageExpenses;
 
 import androidx.room.Database;
 import androidx.room.RoomDatabase;

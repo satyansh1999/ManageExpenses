@@ -1,4 +1,4 @@
-package androidsamples.java.DigitalDiary;
+package androidsamples.java.ManageExpenses;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

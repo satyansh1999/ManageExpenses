@@ -1,4 +1,4 @@
-package androidsamples.java.DigitalDiary;
+package androidsamples.java.ManageExpenses;
 
 import android.content.Context;
 
@@ -53,12 +53,20 @@ public class JournalRepository {
         return mJournalEntryDao.getAllEntriesOfGroup(grp);
     }
 
+    public LiveData<List<JournalEntry>> getAllEntries() {
+        return mJournalEntryDao.getAllEntries();
+    }
+
     public LiveData<List<String>> getAllGroups() {
         return mJournalEntryDao.getAllGroups();
     }
 
     public void deleteGroup(String grp) {
         mExecutor.execute(() -> mJournalEntryDao.deleteGroup(grp));
+    }
+
+    public void deleteAll() {
+        mExecutor.execute(mJournalEntryDao::deleteAll);
     }
 
     public void updateGroup(String grp_old, String grp_new) {

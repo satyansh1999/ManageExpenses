@@ -7,7 +7,7 @@ android {
   compileSdk 30
 
   defaultConfig {
-    applicationId "androidsamples.java.DigitalDiary"
+    applicationId "androidsamples.java.ManageExpenses"
     minSdk 21
     targetSdk 30
     versionCode 1
@@ -57,4 +57,7 @@ dependencies {
 
   // needed for instantTaskExecutorRule
   androidTestImplementation "androidx.arch.core:core-testing:2.1.0"
+
+  // needed for opening csv files
+  implementation 'com.opencsv:opencsv:4.6'
 }

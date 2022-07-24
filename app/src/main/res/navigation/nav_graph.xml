@@ -7,7 +7,7 @@
 
   <fragment
       android:id="@+id/entryListFragment"
-      android:name="androidsamples.java.DigitalDiary.EntryListFragment"
+      android:name="androidsamples.java.ManageExpenses.EntryListFragment"
       android:label="fragment_entry_list"
       tools:layout="@layout/fragment_entry_list">
     <action
@@ -24,7 +24,7 @@
 
   <fragment
       android:id="@+id/entryDetailsFragment"
-      android:name="androidsamples.java.DigitalDiary.EntryDetailsFragment"
+      android:name="androidsamples.java.ManageExpenses.EntryDetailsFragment"
       android:label="fragment_entry_details"
       tools:layout="@layout/fragment_entry_details">
     <argument
@@ -43,11 +43,11 @@
 
   <dialog
       android:id="@+id/datePickerDialog"
-      android:name="androidsamples.java.DigitalDiary.DatePickerFragment" />
+      android:name="androidsamples.java.ManageExpenses.DatePickerFragment" />
 
   <fragment
       android:id="@+id/entryGroupFragment"
-      android:name="androidsamples.java.DigitalDiary.EntryGroupsFragment"
+      android:name="androidsamples.java.ManageExpenses.EntryGroupsFragment"
       android:label="fragment_entry_groups"
       tools:layout="@layout/fragment_entry_groups">
     <action
@@ -67,7 +67,7 @@
   </fragment>
   <fragment
       android:id="@+id/GroupDetailsFragment"
-      android:name="androidsamples.java.DigitalDiary.GroupDetailsFragment"
+      android:name="androidsamples.java.ManageExpenses.GroupDetailsFragment"
       android:label="fragment_group_details"
       tools:layout="@layout/fragment_group_details">
     <argument

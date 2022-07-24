@@ -1,4 +1,4 @@
-package androidsamples.java.DigitalDiary;
+package androidsamples.java.ManageExpenses;
 
 import android.util.Log;
 
@@ -39,20 +39,26 @@ public class AppViewModel extends ViewModel {
         Log.d(TAG, "Deleting entry: " + entry.getUid());
         mRepository.delete(entry);
     }
-
+    void deleteAll() {
+        Log.d(TAG, "Deleting all data");
+        mRepository.deleteAll();
+    }
     public void deleteGroup(String grp) {
         mRepository.deleteGroup(grp);
     }
+
     public LiveData<List<JournalEntry>> getAllEntriesOfGroup(String grp) {
         return mRepository.getAllEntriesOfGroup(grp);
+    }
+    public LiveData<List<JournalEntry>> getAllEntries() {
+        return mRepository.getAllEntries();
+    }
+    public LiveData<List<String>> getAllGroups() {
+        return mRepository.getAllGroups();
     }
 
     void updateGroup(String grp_old, String grp_new) {
         Log.d(TAG, "Updating Group: " + grp_old);
         mRepository.updateGroup(grp_old,grp_new);
-    }
-
-    public LiveData<List<String>> getAllGroups() {
-        return mRepository.getAllGroups();
     }
 }
