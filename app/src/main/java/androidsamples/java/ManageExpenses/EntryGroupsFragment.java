@@ -46,6 +46,7 @@ import com.opencsv.CSVReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.Collections;
 import java.util.List;
 
 public class EntryGroupsFragment extends Fragment{
@@ -347,6 +348,7 @@ public class EntryGroupsFragment extends Fragment{
 
         @SuppressLint("NotifyDataSetChanged")
         public void setEntries(List<String> entries) {
+            Collections.reverse(entries);
             mGroups = entries;
             notifyDataSetChanged();
         }
