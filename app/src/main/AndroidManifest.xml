@@ -2,10 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+  <!-- Storage permissions for different Android versions -->
+  <!-- For Android 12L (API 32) and below -->
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+      android:maxSdkVersion="32" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-      android:maxSdkVersion="29" />
-  <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+      android:maxSdkVersion="29"
+      tools:ignore="ScopedStorage" />
+  
+  <!-- For Android 13 (API 33) and above - Granular media permissions -->
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+  
+  <!-- For Android 14 (API 34) and above - Photo picker permissions -->
+  <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
 
   <application
       android:name=".JournalApplication"
@@ -15,15 +26,33 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:supportsRtl="true"
       android:theme="@style/Theme.ManageExpenses"
-      android:fullBackupContent="@xml/backup_descriptor">
+      android:fullBackupContent="@xml/backup_descriptor"
+      android:dataExtractionRules="@xml/data_extraction_rules"
+      android:enableOnBackInvokedCallback="true"
+      tools:targetApi="tiramisu">
+    
     <activity
         android:name=".MainActivity"
-        android:exported="true">
+        android:exported="true"
+        android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
+    
+    <!-- Disable WorkManager's default initialization for better control -->
+    <provider
+        android:name="androidx.startup.InitializationProvider"
+        android:authorities="${applicationId}.androidx-startup"
+        android:exported="false"
+        tools:node="merge">
+      <meta-data
+          android:name="androidx.work.WorkManagerInitializer"
+          android:value="androidx.startup"
+          tools:node="remove" />
+    </provider>
+    
   </application>
 
 </manifest>
