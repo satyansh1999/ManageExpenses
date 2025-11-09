@@ -1,10 +1,8 @@
 package androidsamples.java.ManageExpenses;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.navigation.NavController;
@@ -20,7 +18,6 @@ public class MainActivity extends AppCompatActivity implements EntryGroupsFragme
   private NavController navController;
   private AppBarConfiguration appBarConfiguration;
 
-  @RequiresApi(api = Build.VERSION_CODES.Q)
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);

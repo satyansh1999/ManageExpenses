@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -69,10 +70,30 @@ public class EntryListFragment extends Fragment {
 
     RecyclerView entriesList = view.findViewById(R.id.recyclerView);
     entriesList.setLayoutManager(new LinearLayoutManager(getActivity()));
-    adapter = new EntryListAdapter(getActivity());
+    adapter = new EntryListAdapter();
     entriesList.setAdapter(adapter);
 
-    mAppViewModel.getAllEntriesOfGroup(group).observe(getViewLifecycleOwner(), adapter::setEntries);
+    // Observe entries and handle sorting + total calculation
+    mAppViewModel.getAllEntriesOfGroup(group).observe(getViewLifecycleOwner(), entries -> {
+      // Create mutable copy and sort
+      List<JournalEntry> sortedList = new ArrayList<>(entries);
+      if (sortDescending) {
+        Collections.sort(sortedList, Collections.reverseOrder(new EntryComparator()));
+      } else {
+        Collections.sort(sortedList, new EntryComparator());
+      }
+      
+      // Submit sorted list to adapter (DiffUtil handles the diff)
+      adapter.submitList(sortedList);
+      
+      // Calculate and display total
+      grp_total = 0;
+      for (JournalEntry entry : sortedList) {
+        grp_total += entry.getAmount();
+      }
+      tv.setText(String.format(Locale.US, "%.2f", grp_total));
+    });
+    
     return view;
   }
 
@@ -126,10 +147,20 @@ public class EntryListFragment extends Fragment {
       // Update menu item title and icon to reflect current sort order
       updateSortMenuItem(item);
       
-      // Re-sort and refresh the list
-      if (adapter != null) {
-        adapter.refreshSorting();
+      // Trigger re-sort by getting current list and re-submitting
+      List<JournalEntry> currentList = adapter.getCurrentList();
+      if (currentList != null && !currentList.isEmpty()) {
+        List<JournalEntry> sortedList = new ArrayList<>(currentList);
+        if (sortDescending) {
+          Collections.sort(sortedList, Collections.reverseOrder(new EntryComparator()));
+        } else {
+          Collections.sort(sortedList, new EntryComparator());
+        }
+        adapter.submitList(sortedList);
       }
+      
+      String message = sortDescending ? "Sorted by newest first" : "Sorted by oldest first";
+      Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
       return true;
     }
     return super.onOptionsItemSelected(item);
@@ -187,86 +218,32 @@ public class EntryListFragment extends Fragment {
       }
   }
 
-  private class EntryListAdapter extends RecyclerView.Adapter<EntryViewHolder> {
-    private final LayoutInflater mInflater;
-    private List<JournalEntry> mEntries;
+  /**
+   * RecyclerView adapter using ListAdapter with DiffUtil for efficient updates.
+   * Automatically handles animations for add/edit/delete operations.
+   */
+  private class EntryListAdapter extends ListAdapter<JournalEntry, EntryViewHolder> {
 
-    public EntryListAdapter(Context context) {
-      mInflater = LayoutInflater.from(context);
+    public EntryListAdapter() {
+      super(new EntryDiffCallback());
     }
 
     @NonNull
     @Override
     public EntryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-      View itemView = mInflater.inflate(R.layout.fragment_entry, parent, false);
+      View itemView = LayoutInflater.from(parent.getContext())
+          .inflate(R.layout.fragment_entry, parent, false);
       return new EntryViewHolder(itemView);
     }
 
     @Override
     public void onBindViewHolder(@NonNull EntryViewHolder holder, int position) {
-      if (mEntries != null) {
-        JournalEntry current = mEntries.get(position);
-        holder.bind(current);
-      }
-    }
-
-    @Override
-    public int getItemCount() {
-      return (mEntries == null) ? 0 : mEntries.size();
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    public void setEntries(List<JournalEntry> entries) {
-      // Create a mutable copy of the list from LiveData so we can sort it
-      mEntries = new ArrayList<>(entries);
-      sortEntries();
-      calculateTotal();
-      notifyDataSetChanged();
+      JournalEntry current = getItem(position);
+      holder.bind(current);
     }
     
-    /**
-     * Re-sorts the current list based on the sort order and refreshes the view.
-     * Called when user toggles sort order.
-     */
-    @SuppressLint("NotifyDataSetChanged")
-    public void refreshSorting() {
-      if (mEntries != null && !mEntries.isEmpty()) {
-        sortEntries();
-        notifyDataSetChanged();
-      }
-    }
-    
-    /**
-     * Sorts entries based on the current sort order.
-     * Descending (default): Newest entries first
-     * Ascending: Oldest entries first
-     */
-    private void sortEntries() {
-      if (mEntries == null || mEntries.isEmpty()) {
-        return;
-      }
-      
-      if (sortDescending) {
-        // Sort descending (newest first) - reverse the normal order
-        Collections.sort(mEntries, Collections.reverseOrder(new EntryComparator()));
-      } else {
-        // Sort ascending (oldest first) - normal order
-        Collections.sort(mEntries, new EntryComparator());
-      }
-    }
-    
-    /**
-     * Calculates and displays the total amount for all entries.
-     */
-    private void calculateTotal() {
-      grp_total = 0;
-      if (mEntries != null) {
-        for (JournalEntry entry : mEntries) {
-          grp_total += entry.getAmount();
-        }
-      }
-      tv.setText(String.format(Locale.US, "%.2f", grp_total));
-    }
+    // getItemCount() is automatically provided by ListAdapter
+    // No need to override it
   }
 
 }

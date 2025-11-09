@@ -29,6 +29,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -39,6 +40,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -95,10 +97,16 @@ public class EntryGroupsFragment extends Fragment{
 
         RecyclerView entriesList = view.findViewById(R.id.recyclerViewGroups);
         entriesList.setLayoutManager(new LinearLayoutManager(getActivity()));
-        EntryListAdapter adapter = new EntryListAdapter(getActivity());
+        EntryListAdapter adapter = new EntryListAdapter();
         entriesList.setAdapter(adapter);
 
-        mAppViewModel.getAllGroups().observe(getViewLifecycleOwner(), adapter::setEntries);
+        // Observe groups and submit to adapter (DiffUtil handles the diff)
+        mAppViewModel.getAllGroups().observe(getViewLifecycleOwner(), groups -> {
+            // Reverse list to show newest groups first
+            List<String> reversed = new ArrayList<>(groups);
+            Collections.reverse(reversed);
+            adapter.submitList(reversed);
+        });
         return view;
     }
     
@@ -484,39 +492,31 @@ public class EntryGroupsFragment extends Fragment{
         }
     }
 
-    private class EntryListAdapter extends RecyclerView.Adapter<EntryViewHolder> {
-        private final LayoutInflater mInflater;
-        private List<String> mGroups;
+    /**
+     * RecyclerView adapter using ListAdapter with DiffUtil for efficient updates.
+     * Automatically handles animations for add/edit/delete operations.
+     */
+    private class EntryListAdapter extends ListAdapter<String, EntryViewHolder> {
 
-        public EntryListAdapter(Context context) {
-            mInflater = LayoutInflater.from(context);
+        public EntryListAdapter() {
+            super(new GroupDiffCallback());
         }
 
         @NonNull
         @Override
         public EntryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View itemView = mInflater.inflate(R.layout.fragment_group, parent, false);
+            View itemView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.fragment_group, parent, false);
             return new EntryViewHolder(itemView);
         }
 
         @Override
         public void onBindViewHolder(@NonNull EntryViewHolder holder, int position) {
-            if (mGroups != null) {
-                String current = mGroups.get(position);
-                holder.bind(current);
-            }
+            String current = getItem(position);
+            holder.bind(current);
         }
-
-        @Override
-        public int getItemCount() {
-            return (mGroups == null) ? 0 : mGroups.size();
-        }
-
-        @SuppressLint("NotifyDataSetChanged")
-        public void setEntries(List<String> entries) {
-            Collections.reverse(entries);
-            mGroups = entries;
-            notifyDataSetChanged();
-        }
+        
+        // getItemCount() is automatically provided by ListAdapter
+        // No need to override it
     }
 }
