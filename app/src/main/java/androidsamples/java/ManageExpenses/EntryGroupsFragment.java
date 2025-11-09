@@ -58,7 +58,7 @@ public class EntryGroupsFragment extends Fragment{
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAppViewModel = new ViewModelProvider(this).get(AppViewModel.class);
+        mAppViewModel = new ViewModelProvider(requireActivity()).get(AppViewModel.class);
         
         // Register export launcher
         exportLauncher = registerForActivityResult(

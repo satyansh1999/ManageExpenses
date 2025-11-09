@@ -58,13 +58,25 @@ public class JournalEntry {
     public void setText(String t){
         this.mText = t;
     }
+    
+    /**
+     * Get the description text of this entry.
+     * @return The description text, never null (returns empty string if null)
+     */
+    @NonNull
     public String getText(){
-        return this.mText;
+        return this.mText != null ? this.mText : "";
     }
 
     public void setId(UUID id){
         this.mUid = id;
     }
+    
+    /**
+     * Get the unique identifier for this entry.
+     * @return The UUID, never null
+     */
+    @NonNull
     public UUID getUid(){
         return this.mUid;
     }
@@ -72,6 +84,11 @@ public class JournalEntry {
     public void setAmount(double t){
         this.mAmount = t;
     }
+    
+    /**
+     * Get the amount for this entry.
+     * @return The amount as a double
+     */
     public double getAmount(){
         return this.mAmount;
     }
@@ -79,15 +96,22 @@ public class JournalEntry {
     public void setDate(String d){
         this.mDate = d;
     }
+    
+    /**
+     * Get the date with timestamp for this entry.
+     * @return The date string in format "EEE, MMM dd, yyyy HH:mm:ss", never null
+     */
+    @NonNull
     public String getDate(){
-        return this.mDate;
+        return this.mDate != null ? this.mDate : "";
     }
     
     /**
      * Get formatted date for UI display (date only, without time).
      * Extracts just the date portion from the stored timestamp.
-     * @return Date string in format "EEE, MMM dd, yyyy"
+     * @return Date string in format "EEE, MMM dd, yyyy", never null
      */
+    @NonNull
     public String getFormattedDate() {
         if (mDate == null || mDate.isEmpty()) {
             return "";
@@ -106,7 +130,13 @@ public class JournalEntry {
     public void setGroup(String d){
         this.mGroup = d;
     }
+    
+    /**
+     * Get the group/category name for this entry.
+     * @return The group name, never null (returns empty string if null)
+     */
+    @NonNull
     public String getGroup(){
-        return this.mGroup;
+        return this.mGroup != null ? this.mGroup : "";
     }
 }

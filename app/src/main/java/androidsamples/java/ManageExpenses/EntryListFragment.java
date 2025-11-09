@@ -47,7 +47,7 @@ public class EntryListFragment extends Fragment {
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setHasOptionsMenu(true);
-    mAppViewModel = new ViewModelProvider(this).get(AppViewModel.class);
+    mAppViewModel = new ViewModelProvider(requireActivity()).get(AppViewModel.class);
     
     // Safely extract navigation arguments with null check
     Bundle args = getArguments();
