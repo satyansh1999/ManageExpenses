@@ -18,8 +18,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -39,9 +37,6 @@ public class EntryListFragment extends Fragment {
   private String group;
   private double grp_total = 0;
   private TextView tv;
-
-  @SuppressLint("StaticFieldLeak")
-  public static NavController navController;
 
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -67,12 +62,6 @@ public class EntryListFragment extends Fragment {
 
     mAppViewModel.getAllEntriesOfGroup(group).observe(requireActivity(), adapter::setEntries);
     return view;
-  }
-
-  @Override
-  public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-    super.onViewCreated(view, savedInstanceState);
-    navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
   }
 
   public void addNewEntry(View view) {
@@ -108,7 +97,7 @@ public class EntryListFragment extends Fragment {
       alert.setPositiveButton(android.R.string.yes, (dialog, which) -> {
         mAppViewModel.deleteGroup(group);
         Toast.makeText(getContext(), group + " deleted", Toast.LENGTH_SHORT).show();
-        requireActivity().onBackPressed();
+        requireActivity().getOnBackPressedDispatcher().onBackPressed();
       });
       alert.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss());
       alert.show();
@@ -182,7 +171,7 @@ public class EntryListFragment extends Fragment {
     @SuppressLint("NotifyDataSetChanged")
     public void setEntries(List<JournalEntry> entries) {
       mEntries = entries;
-      Collections.sort(mEntries,new entryCompare());
+      Collections.sort(mEntries, new EntryComparator());
       grp_total = 0;
       for(int i = 0 ; i < entries.size() ; i++ ){
         grp_total += entries.get(i).getAmount();

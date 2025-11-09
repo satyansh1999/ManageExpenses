@@ -35,8 +35,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -53,8 +51,6 @@ public class EntryGroupsFragment extends Fragment{
     private static final String TAG = "EntryGroupsFragment";
     private AppViewModel mAppViewModel;
     private GroupCallbacks mCallbacks = null;
-    @SuppressLint("StaticFieldLeak")
-    public static NavController navController;
     private ActivityResultLauncher<Intent> activityResultLauncher;
 
     private static final int STORAGE_REQUEST_CODE = 1;
@@ -103,12 +99,6 @@ public class EntryGroupsFragment extends Fragment{
 
         mAppViewModel.getAllGroups().observe(requireActivity(), adapter::setEntries);
         return view;
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
     }
 
     public void addNewEntry(View view) {
