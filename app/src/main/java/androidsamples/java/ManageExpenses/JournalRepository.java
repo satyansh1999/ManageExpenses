@@ -70,7 +70,7 @@ public class JournalRepository {
     }
 
     @NonNull
-    public LiveData<List<String>> getAllGroups() {
+    public LiveData<List<JournalEntry>> getAllGroups() {
         return mJournalEntryDao.getAllGroups();
     }
 
