@@ -8,7 +8,7 @@
   <fragment
       android:id="@+id/entryListFragment"
       android:name="androidsamples.java.ManageExpenses.EntryListFragment"
-      android:label="fragment_entry_list"
+      android:label="{group}"
       tools:layout="@layout/fragment_entry_list">
     <action
         android:id="@+id/addEntryAction"
@@ -25,7 +25,7 @@
   <fragment
       android:id="@+id/entryDetailsFragment"
       android:name="androidsamples.java.ManageExpenses.EntryDetailsFragment"
-      android:label="fragment_entry_details"
+      android:label="Entry Details"
       tools:layout="@layout/fragment_entry_details">
     <argument
         android:name="entryId"
@@ -48,7 +48,7 @@
   <fragment
       android:id="@+id/entryGroupFragment"
       android:name="androidsamples.java.ManageExpenses.EntryGroupsFragment"
-      android:label="fragment_entry_groups"
+      android:label="ManageExpenses"
       tools:layout="@layout/fragment_entry_groups">
     <action
         android:id="@+id/groupSelectedAction"

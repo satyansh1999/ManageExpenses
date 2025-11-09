@@ -9,6 +9,7 @@ import android.widget.Button;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,11 +38,17 @@ public class DatePickerFragment extends DialogFragment {
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     // TODO implement the method
     return new DatePickerDialog(requireContext(), (dp, y, m, d) -> {
+      // Set the selected date while preserving current time
+      Calendar now = Calendar.getInstance();
       calendar.set(Calendar.YEAR, y);
       calendar.set(Calendar.MONTH, m);
       calendar.set(Calendar.DAY_OF_MONTH, d);
+      calendar.set(Calendar.HOUR_OF_DAY, now.get(Calendar.HOUR_OF_DAY));
+      calendar.set(Calendar.MINUTE, now.get(Calendar.MINUTE));
+      calendar.set(Calendar.SECOND, now.get(Calendar.SECOND));
 
-      @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, MMM dd, yyyy");
+      // Format with timestamp for database storage
+      SimpleDateFormat simpleDateFormat = new SimpleDateFormat(JournalEntry.DATE_TIME_FORMAT, Locale.US);
       mEditDate.setText(simpleDateFormat.format(calendar.getTime()));
     }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
   }

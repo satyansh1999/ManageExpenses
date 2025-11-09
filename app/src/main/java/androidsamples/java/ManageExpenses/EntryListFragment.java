@@ -18,15 +18,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -39,16 +40,23 @@ public class EntryListFragment extends Fragment {
   private String group;
   private double grp_total = 0;
   private TextView tv;
-
-  @SuppressLint("StaticFieldLeak")
-  public static NavController navController;
+  private EntryListAdapter adapter;
+  private boolean sortDescending = true; // Default: newest first (descending)
 
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setHasOptionsMenu(true);
-    mAppViewModel = new ViewModelProvider(this).get(AppViewModel.class);
-    group = EntryListFragmentArgs.fromBundle(getArguments()).getGroup();
+    mAppViewModel = new ViewModelProvider(requireActivity()).get(AppViewModel.class);
+    
+    // Safely extract navigation arguments with null check
+    Bundle args = getArguments();
+    if (args != null) {
+      group = EntryListFragmentArgs.fromBundle(args).getGroup();
+    } else {
+      Log.e(TAG, "No arguments passed to EntryListFragment, using default group");
+      group = "Default";
+    }
   }
 
   @Nullable
@@ -62,17 +70,31 @@ public class EntryListFragment extends Fragment {
 
     RecyclerView entriesList = view.findViewById(R.id.recyclerView);
     entriesList.setLayoutManager(new LinearLayoutManager(getActivity()));
-    EntryListAdapter adapter = new EntryListAdapter(getActivity());
+    adapter = new EntryListAdapter();
     entriesList.setAdapter(adapter);
 
-    mAppViewModel.getAllEntriesOfGroup(group).observe(requireActivity(), adapter::setEntries);
+    // Observe entries and handle sorting + total calculation
+    mAppViewModel.getAllEntriesOfGroup(group).observe(getViewLifecycleOwner(), entries -> {
+      // Create mutable copy and sort
+      List<JournalEntry> sortedList = new ArrayList<>(entries);
+      if (sortDescending) {
+        Collections.sort(sortedList, Collections.reverseOrder(new EntryComparator()));
+      } else {
+        Collections.sort(sortedList, new EntryComparator());
+      }
+      
+      // Submit sorted list to adapter (DiffUtil handles the diff)
+      adapter.submitList(sortedList);
+      
+      // Calculate and display total
+      grp_total = 0;
+      for (JournalEntry entry : sortedList) {
+        grp_total += entry.getAmount();
+      }
+      tv.setText(String.format(Locale.US, "%.2f", grp_total));
+    });
+    
     return view;
-  }
-
-  @Override
-  public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-    super.onViewCreated(view, savedInstanceState);
-    navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
   }
 
   public void addNewEntry(View view) {
@@ -95,6 +117,12 @@ public class EntryListFragment extends Fragment {
   public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
     inflater.inflate(R.menu.fragment_entry_list, menu);
+    
+    // Set initial menu item title and icon based on default sort order
+    MenuItem sortItem = menu.findItem(R.id.menu_sort_entries);
+    if (sortItem != null) {
+      updateSortMenuItem(sortItem);
+    }
   }
 
   @Override
@@ -108,12 +136,50 @@ public class EntryListFragment extends Fragment {
       alert.setPositiveButton(android.R.string.yes, (dialog, which) -> {
         mAppViewModel.deleteGroup(group);
         Toast.makeText(getContext(), group + " deleted", Toast.LENGTH_SHORT).show();
-        requireActivity().onBackPressed();
+        requireActivity().getOnBackPressedDispatcher().onBackPressed();
       });
       alert.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss());
       alert.show();
+      return true;
+    } else if (item.getItemId() == R.id.menu_sort_entries) {
+      sortDescending = !sortDescending; // Toggle sort order
+      
+      // Update menu item title and icon to reflect current sort order
+      updateSortMenuItem(item);
+      
+      // Trigger re-sort by getting current list and re-submitting
+      List<JournalEntry> currentList = adapter.getCurrentList();
+      if (currentList != null && !currentList.isEmpty()) {
+        List<JournalEntry> sortedList = new ArrayList<>(currentList);
+        if (sortDescending) {
+          Collections.sort(sortedList, Collections.reverseOrder(new EntryComparator()));
+        } else {
+          Collections.sort(sortedList, new EntryComparator());
+        }
+        adapter.submitList(sortedList);
+      }
+      
+      String message = sortDescending ? "Sorted by newest first" : "Sorted by oldest first";
+      Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+      return true;
     }
     return super.onOptionsItemSelected(item);
+  }
+
+  /**
+   * Updates the sort menu item's title and icon based on current sort order.
+   * @param sortItem The menu item to update
+   */
+  private void updateSortMenuItem(MenuItem sortItem) {
+    if (sortDescending) {
+      // Descending: Newest first (down arrow - newer dates at top)
+      sortItem.setTitle("Sort: Newest First");
+      sortItem.setIcon(R.drawable.ic_sort_descending);
+    } else {
+      // Ascending: Oldest first (up arrow - older dates at top)
+      sortItem.setTitle("Sort: Oldest First");
+      sortItem.setIcon(R.drawable.ic_sort_ascending);
+    }
   }
 
   interface Callbacks {
@@ -142,54 +208,42 @@ public class EntryListFragment extends Fragment {
       mCallbacks.onEntrySelected(mEntry.getUid(), true, group);
     }
 
-    void bind(JournalEntry entry) {
-      mEntry = entry;
-      this.mTxtTitle.setText(mEntry.getText());
-      this.mDate.setText(mEntry.getDate());
-      this.mGroup.setText(mEntry.getGroup());
-      this.mAmount.setText(String.valueOf(mEntry.getAmount()));
-    }
+      void bind(JournalEntry entry) {
+        mEntry = entry;
+        this.mTxtTitle.setText(mEntry.getText());
+        // Display only date (not timestamp) to user
+        this.mDate.setText(mEntry.getFormattedDate());
+        this.mGroup.setText(mEntry.getGroup());
+        this.mAmount.setText(String.format(Locale.US, "%.2f", mEntry.getAmount()));
+      }
   }
 
-  private class EntryListAdapter extends RecyclerView.Adapter<EntryViewHolder> {
-    private final LayoutInflater mInflater;
-    private List<JournalEntry> mEntries;
+  /**
+   * RecyclerView adapter using ListAdapter with DiffUtil for efficient updates.
+   * Automatically handles animations for add/edit/delete operations.
+   */
+  private class EntryListAdapter extends ListAdapter<JournalEntry, EntryViewHolder> {
 
-    public EntryListAdapter(Context context) {
-      mInflater = LayoutInflater.from(context);
+    public EntryListAdapter() {
+      super(new EntryDiffCallback());
     }
 
     @NonNull
     @Override
     public EntryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-      View itemView = mInflater.inflate(R.layout.fragment_entry, parent, false);
+      View itemView = LayoutInflater.from(parent.getContext())
+          .inflate(R.layout.fragment_entry, parent, false);
       return new EntryViewHolder(itemView);
     }
 
     @Override
     public void onBindViewHolder(@NonNull EntryViewHolder holder, int position) {
-      if (mEntries != null) {
-        JournalEntry current = mEntries.get(position);
-        holder.bind(current);
-      }
+      JournalEntry current = getItem(position);
+      holder.bind(current);
     }
-
-    @Override
-    public int getItemCount() {
-      return (mEntries == null) ? 0 : mEntries.size();
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    public void setEntries(List<JournalEntry> entries) {
-      mEntries = entries;
-      Collections.sort(mEntries,new entryCompare());
-      grp_total = 0;
-      for(int i = 0 ; i < entries.size() ; i++ ){
-        grp_total += entries.get(i).getAmount();
-      }
-      tv.setText(String.valueOf(grp_total));
-      notifyDataSetChanged();
-    }
+    
+    // getItemCount() is automatically provided by ListAdapter
+    // No need to override it
   }
 
 }
