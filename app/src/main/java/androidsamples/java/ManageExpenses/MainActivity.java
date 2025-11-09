@@ -1,12 +1,9 @@
 package androidsamples.java.ManageExpenses;
 
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -20,7 +17,6 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements EntryGroupsFragment.GroupCallbacks, EntryListFragment.Callbacks {
   private static final String TAG = "MainActivity";
-  private static final int STORAGE_REQUEST_CODE = 1;
   private NavController navController;
   private AppBarConfiguration appBarConfiguration;
 
@@ -67,20 +63,6 @@ public class MainActivity extends AppCompatActivity implements EntryGroupsFragme
     if (navController != null) {
       NavDirections action = EntryGroupsFragmentDirections.groupSelectedAction(grp);
       navController.navigate(action);
-    }
-  }
-
-  @Override
-  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    if (requestCode == STORAGE_REQUEST_CODE) {
-      if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED &&
-              grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-        Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
-      }
-      else {
-        Toast.makeText(this, "Storage Permission Required...", Toast.LENGTH_SHORT).show();
-      }
     }
   }
 }

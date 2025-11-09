@@ -1,17 +1,12 @@
 package androidsamples.java.ManageExpenses;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,15 +18,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -41,47 +34,55 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.opencsv.CSVReader;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class EntryGroupsFragment extends Fragment{
     private static final String TAG = "EntryGroupsFragment";
     private AppViewModel mAppViewModel;
     private GroupCallbacks mCallbacks = null;
-    private ActivityResultLauncher<Intent> activityResultLauncher;
-
-    private static final int STORAGE_REQUEST_CODE = 1;
-    private String[] storagePermissions;
+    
+    // Storage Access Framework launchers
+    private ActivityResultLauncher<Intent> exportLauncher;
+    private ActivityResultLauncher<Intent> importLauncher;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
         mAppViewModel = new ViewModelProvider(this).get(AppViewModel.class);
-        storagePermissions = new String[]{
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-        };
-        activityResultLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                new ActivityResultCallback<ActivityResult>() {
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        if( result.getResultCode() == Activity.RESULT_OK ){
-                            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R){
-                                if(Environment.isExternalStorageManager()){
-                                    Toast.makeText(requireContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
-                                }
-                                else {
-                                    Toast.makeText(requireContext(), "Storage Permission Required...", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        }
+        
+        // Register export launcher
+        exportLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) {
+                        performExport(uri);
                     }
-                });
+                }
+            }
+        );
+        
+        // Register import launcher
+        importLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) {
+                        performImport(uri);
+                    }
+                }
+            }
+        );
     }
 
     @Nullable
@@ -100,16 +101,57 @@ public class EntryGroupsFragment extends Fragment{
         mAppViewModel.getAllGroups().observe(requireActivity(), adapter::setEntries);
         return view;
     }
+    
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        
+        // Setup menu using the new MenuProvider API (replaces deprecated setHasOptionsMenu)
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menuInflater.inflate(R.menu.group_list_fragment, menu);
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                if (menuItem.getItemId() == R.id.backup) {
+                    Log.d(TAG, "Export Data button clicked");
+                    AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+                    alert.setTitle("Export data");
+                    alert.setMessage("Choose a location to save your expenses data as CSV.");
+                    alert.setPositiveButton(android.R.string.yes, (dialog, which) -> launchExportFilePicker());
+                    alert.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss());
+                    alert.show();
+                    return true;
+                }
+                else if (menuItem.getItemId() == R.id.restore) {
+                    Log.d(TAG, "Import Data button clicked");
+                    AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+                    alert.setTitle("Import data");
+                    alert.setMessage("Select a CSV file to import. Your current data will be preserved.");
+                    alert.setPositiveButton(android.R.string.yes, (dialog, which) -> launchImportFilePicker());
+                    alert.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss());
+                    alert.show();
+                    return true;
+                }
+                else if (menuItem.getItemId() == R.id.menu_delete_all) {
+                    deleteAll();
+                    return true;
+                }
+                return false;
+            }
+        }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+    }
 
     public void addNewEntry(View view) {
-        //mCallbacks.onGroupAdded();
         AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
         final View vi = getLayoutInflater().inflate(R.layout.fragment_group_details,null);
         EditText titleG = vi.findViewById(R.id.edit_title_group);
 
         alert.setPositiveButton(android.R.string.yes, (dialog, which) -> {
             String str = titleG.getText().toString().trim();
-            if(str.length() > 0) {
+            if(!str.isEmpty()) {
                 JournalEntry mEntry = new JournalEntry();
                 mEntry.setText("_");
                 mEntry.setGroup(str);
@@ -135,52 +177,6 @@ public class EntryGroupsFragment extends Fragment{
         mCallbacks = null;
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.group_list_fragment, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.backup) {
-            Log.d(TAG, "Export Data button clicked");
-            AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
-            alert.setTitle("Export data");
-            alert.setMessage("Are you sure you want to export data? The data will be saved in expenses.csv file in ManageExpenses folder.");
-            alert.setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                if(checkStoragePermission()) {
-                    exportCSV();
-                }
-                else {
-                    requestStoragePermission();
-                }
-            });
-            alert.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss());
-            alert.show();
-        }
-        else if (item.getItemId() == R.id.restore) {
-            Log.d(TAG, "Import Data button clicked");
-            AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
-            alert.setTitle("Export data");
-            alert.setMessage("Are you sure you want to import data from expenses.csv file in ManageExpenses folder? You will not loose your current data.");
-            alert.setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                if(checkStoragePermission()) {
-                    importCSV();
-                }
-                else {
-                    requestStoragePermission();
-                }
-            });
-            alert.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss());
-            alert.show();
-        }
-        else if (item.getItemId() == R.id.menu_delete_all) {
-            deleteAll();
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     private void deleteAll() {
         Log.d(TAG, "Delete Data button clicked");
         AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
@@ -194,74 +190,226 @@ public class EntryGroupsFragment extends Fragment{
         alert.show();
     }
 
-    private void importCSV() {
-        File file = new File(Environment.getExternalStorageDirectory() + "/ManageExpenses/expenses.csv");
-        if(!file.exists()) {
-            Toast.makeText(getContext(), "CSV file not found. Rename your file to expenses.csv and place it in ManageExpenses folder.", Toast.LENGTH_LONG).show();
-            return;
-        }
-        try {
-            CSVReader reader = new CSVReader(new FileReader(file.getAbsolutePath()));
-            String[] nextLine;
-            while( (nextLine = reader.readNext()) != null ) {
-                Log.d(TAG, nextLine[0] + "," + nextLine[1]  + "," + nextLine[2]  + "," + nextLine[3]);
-                JournalEntry entry = new JournalEntry();
-                entry.setGroup(nextLine[0]);
-                entry.setDate(nextLine[1] + "," + nextLine[2] + "," + nextLine[3]);
-                entry.setAmount(Double.parseDouble(nextLine[4]));
-                StringBuilder text = new StringBuilder(nextLine[5]);
-                for(int i=6; i < nextLine.length;i++){
-                    text.append(",");
-                    text.append(nextLine[i]);
-                }
-                entry.setText(text.toString());
-                mAppViewModel.insert(entry);
-            }
-            Toast.makeText(getContext(), "Data imported", Toast.LENGTH_SHORT).show();
-        }
-        catch (Exception e) {
-            Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+    /**
+     * Launch file picker to select export location using Storage Access Framework.
+     * No permissions required - works on all Android versions.
+     */
+    private void launchExportFilePicker() {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("text/csv");
+        
+        // Suggest filename with timestamp
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        intent.putExtra(Intent.EXTRA_TITLE, "expenses_" + timestamp + ".csv");
+        
+        exportLauncher.launch(intent);
     }
 
-    private void exportCSV() {
-        File folder = new File(Environment.getExternalStorageDirectory() + "/ManageExpenses");
-        Log.d(TAG, "CSV filepath : " + folder.getAbsolutePath());
-        boolean isFolderCreated = false;
-        if(!folder.exists()) {
-            isFolderCreated = folder.mkdirs();
-            if(!isFolderCreated) {
-                Toast.makeText(getContext(), "Unable to create storage folder", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }
-        String filePath = folder.toString() + File.separator +  "expenses.csv";
+    /**
+     * Launch file picker to select CSV file to import using Storage Access Framework.
+     * No permissions required - works on all Android versions.
+     * <p>
+     * Note: Uses universal MIME type to allow selecting any file since some file 
+     * managers don't properly recognize CSV MIME types. The actual validation 
+     * happens during import.
+     */
+    private void launchImportFilePicker() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        
+        // Use "*/*" to show all files - some file managers don't recognize "text/csv"
+        // This allows users to select CSV files regardless of how they were created
+        intent.setType("*/*");
+        
+        // Optionally suggest CSV and text files (not all file managers support this)
+        String[] mimeTypes = {"text/csv", "text/comma-separated-values", "text/plain", "text/*"};
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+        
+        importLauncher.launch(intent);
+    }
 
+    /**
+     * Export all entries to a CSV file at the specified URI.
+     * Uses Storage Access Framework for modern, permission-less file access.
+     * 
+     * @param uri URI where the file should be saved (from file picker)
+     */
+    private void performExport(Uri uri) {
         LiveData<List<JournalEntry>> data = mAppViewModel.getAllEntries();
-        data.observe(requireActivity(), new Observer<List<JournalEntry>>() {
+        data.observe(getViewLifecycleOwner(), new Observer<>() {
             @Override
             public void onChanged(List<JournalEntry> journalEntries) {
                 try {
-                    File csv = new File(filePath);
-                    csv.createNewFile();
-                    FileWriter fw = new FileWriter(filePath);
-                    for (JournalEntry entry: journalEntries) {
-                        fw.append(entry.getGroup() + ",");
-                        fw.append(entry.getDate() + ",");
-                        fw.append(entry.getAmount() + ",");
-                        fw.append(entry.getText());
-                        fw.append("\n");
+                    OutputStream os = requireContext().getContentResolver().openOutputStream(uri);
+                    if (os == null) {
+                        Toast.makeText(getContext(), "Failed to open file for writing", 
+                            Toast.LENGTH_SHORT).show();
+                        return;
                     }
-                    fw.flush();
-                    fw.close();
-                    Toast.makeText(getContext(), "Data exported", Toast.LENGTH_SHORT).show();
-                }
-                catch (Exception e) {
-                    Toast.makeText(getContext(), e.getClass() + " - " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    
+                    OutputStreamWriter writer = new OutputStreamWriter(os);
+                    
+                    // Write CSV header
+                    writer.write("Group,Date,Amount,Description\n");
+                    
+                    // Write entries
+                    int exportCount = 0;
+                    for (JournalEntry entry : journalEntries) {
+                        // Skip placeholder entries
+                        if ("_".equals(entry.getText())) {
+                            continue;
+                        }
+                        
+                        // Escape group field for CSV (handle commas, quotes, newlines)
+                        String group = entry.getGroup();
+                        if (group.contains(",") || group.contains("\"") || group.contains("\n")) {
+                            group = "\"" + group.replace("\"", "\"\"") + "\"";
+                        }
+                        
+                        // Escape date field for CSV - dates contain commas (e.g., "Mon, Jan 01, 2024")
+                        String date = entry.getDate();
+                        if (date.contains(",") || date.contains("\"") || date.contains("\n")) {
+                            date = "\"" + date.replace("\"", "\"\"") + "\"";
+                        }
+                        
+                        // Escape description field for CSV (handle commas, quotes, newlines)
+                        String text = entry.getText().replace("\"", "\"\"");
+                        if (text.contains(",") || text.contains("\"") || text.contains("\n")) {
+                            text = "\"" + text + "\"";
+                        }
+                        
+                        // Write row with proper formatting
+                        writer.write(String.format(Locale.getDefault(), "%s,%s,%.2f,%s\n",
+                            group,
+                            date,
+                            entry.getAmount(),
+                            text
+                        ));
+                        exportCount++;
+                    }
+                    
+                    writer.flush();
+                    writer.close();
+                    
+                    Toast.makeText(getContext(), 
+                        "Exported " + exportCount + " entries successfully", 
+                        Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Export successful: " + exportCount + " entries");
+                    
+                } catch (Exception e) {
+                    Log.e(TAG, "Export error", e);
+                    Toast.makeText(getContext(), 
+                        "Export failed: " + e.getMessage(), 
+                        Toast.LENGTH_LONG).show();
                 }
                 data.removeObserver(this);
             }
         });
+    }
+
+    /**
+     * Import entries from a CSV file at the specified URI.
+     * Uses Storage Access Framework for modern, permission-less file access.
+     * 
+     * @param uri URI of the CSV file to import (from file picker)
+     */
+    private void performImport(Uri uri) {
+        try {
+            InputStream is = requireContext().getContentResolver().openInputStream(uri);
+            if (is == null) {
+                Toast.makeText(getContext(), "Failed to open file", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            CSVReader reader = new CSVReader(new InputStreamReader(is));
+            String[] nextLine;
+            int importCount = 0;
+            int skipCount = 0;
+            boolean isFirstLine = true;
+            
+            while ((nextLine = reader.readNext()) != null) {
+                // Skip header row if present
+                if (isFirstLine) {
+                    isFirstLine = false;
+                    if (nextLine.length > 0 && "Group".equalsIgnoreCase(nextLine[0])) {
+                        continue;
+                    }
+                }
+                
+                // Debug: Log the row being processed
+                Log.d(TAG, "Processing row with " + nextLine.length + " fields");
+                
+                // Skip incomplete rows
+                if (nextLine.length < 4) {
+                    skipCount++;
+                    Log.w(TAG, "Skipping incomplete row with " + nextLine.length + " fields. Row: " + 
+                        java.util.Arrays.toString(nextLine));
+                    continue;
+                }
+                
+                try {
+                    // Parse and validate entry
+                    String group = nextLine[0].trim();
+                    String date = nextLine[1].trim();
+                    String amountStr = nextLine[2].trim();
+                    
+                    // Handle description - may span multiple fields if commas weren't escaped
+                    StringBuilder descBuilder = new StringBuilder(nextLine[3].trim());
+                    for (int i = 4; i < nextLine.length; i++) {
+                        descBuilder.append(",").append(nextLine[i].trim());
+                    }
+                    String description = descBuilder.toString();
+                    
+                    double amount = Double.parseDouble(amountStr);
+                    
+                    // Validate required fields
+                    if (group.isEmpty() || date.isEmpty() || description.isEmpty()) {
+                        skipCount++;
+                        Log.w(TAG, "Skipping row with empty required fields. Group: '" + group + 
+                            "', Date: '" + date + "', Desc: '" + description + "'");
+                        continue;
+                    }
+                    
+                    if (amount <= 0) {
+                        skipCount++;
+                        Log.w(TAG, "Skipping row with invalid amount: " + amount);
+                        continue;
+                    }
+                    
+                    // Create and insert entry
+                    JournalEntry entry = new JournalEntry();
+                    entry.setGroup(group);
+                    entry.setDate(date);
+                    entry.setAmount(amount);
+                    entry.setText(description);
+                    
+                    mAppViewModel.insert(entry);
+                    importCount++;
+                    Log.d(TAG, "Successfully imported: " + group + " / " + date + " / " + amount);
+                    
+                } catch (NumberFormatException e) {
+                    skipCount++;
+                    Log.w(TAG, "Skipping row with invalid number format. Row: " + 
+                        java.util.Arrays.toString(nextLine), e);
+                }
+            }
+            
+            reader.close();
+            
+            String message = "Imported " + importCount + " entries";
+            if (skipCount > 0) {
+                message += " (skipped " + skipCount + " invalid rows)";
+            }
+            Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+            Log.d(TAG, "Import complete: " + importCount + " entries, " + skipCount + " skipped");
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Import error", e);
+            Toast.makeText(getContext(), 
+                "Import failed: " + e.getMessage(), 
+                Toast.LENGTH_LONG).show();
+        }
     }
 
     interface GroupCallbacks {
@@ -286,7 +434,7 @@ public class EntryGroupsFragment extends Fragment{
 
                 alert.setPositiveButton(android.R.string.yes, (dialog, which) -> {
                     String str = mEditTitle.getText().toString().trim();
-                    if(str.length() > 0) {
+                    if(!str.isEmpty()) {
                         mAppViewModel.updateGroup(Group, str);
                         Toast.makeText(getContext(), "Folder " + Group + " changed to " + str, Toast.LENGTH_SHORT).show();
                     }
@@ -341,37 +489,6 @@ public class EntryGroupsFragment extends Fragment{
             Collections.reverse(entries);
             mGroups = entries;
             notifyDataSetChanged();
-        }
-    }
-
-    private boolean checkStoragePermission() {
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R){
-            return Environment.isExternalStorageManager();
-        }
-        else{
-            boolean readCheck = ContextCompat.checkSelfPermission(requireContext(),
-                    Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-            boolean writeCheck = ContextCompat.checkSelfPermission(requireContext(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-            return readCheck && writeCheck;
-        }
-    }
-
-    private void requestStoragePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            try {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                intent.addCategory("android.intent.categoryDEFAULT");
-                intent.setData(Uri.parse(String.format("package:%s", requireContext().getApplicationContext().getPackageName())));
-                activityResultLauncher.launch(intent);
-            }
-            catch (Exception e) {
-                Intent intent = new Intent();
-                intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                activityResultLauncher.launch(intent);
-            }
-        } else {
-            ActivityCompat.requestPermissions(requireActivity(), storagePermissions, STORAGE_REQUEST_CODE);
         }
     }
 }
