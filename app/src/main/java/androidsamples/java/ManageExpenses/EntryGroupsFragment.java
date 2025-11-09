@@ -98,7 +98,7 @@ public class EntryGroupsFragment extends Fragment{
         EntryListAdapter adapter = new EntryListAdapter(getActivity());
         entriesList.setAdapter(adapter);
 
-        mAppViewModel.getAllGroups().observe(requireActivity(), adapter::setEntries);
+        mAppViewModel.getAllGroups().observe(getViewLifecycleOwner(), adapter::setEntries);
         return view;
     }
     
@@ -199,8 +199,8 @@ public class EntryGroupsFragment extends Fragment{
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("text/csv");
         
-        // Suggest filename with timestamp
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        // Suggest filename with timestamp (Locale.US for consistent filename format)
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         intent.putExtra(Intent.EXTRA_TITLE, "expenses_" + timestamp + ".csv");
         
         exportLauncher.launch(intent);
@@ -279,8 +279,8 @@ public class EntryGroupsFragment extends Fragment{
                             text = "\"" + text + "\"";
                         }
                         
-                        // Write row with proper formatting
-                        writer.write(String.format(Locale.getDefault(), "%s,%s,%.2f,%s\n",
+                        // Write row with proper formatting (Locale.US for consistent CSV format)
+                        writer.write(String.format(Locale.US, "%s,%s,%.2f,%s\n",
                             group,
                             date,
                             entry.getAmount(),
@@ -309,8 +309,33 @@ public class EntryGroupsFragment extends Fragment{
     }
 
     /**
+     * Converts date string to timestamp format if it's in old format (date only).
+     * Old format: "EEE, MMM dd, yyyy" → New format: "EEE, MMM dd, yyyy 00:00:00"
+     * If date already has timestamp, returns it unchanged.
+     * 
+     * @param date Date string to convert
+     * @return Date string in timestamp format
+     */
+    private String convertDateToTimestampFormat(String date) {
+        if (date == null || date.isEmpty()) {
+            return date;
+        }
+        
+        // Check if date already has timestamp (contains time separator ":")
+        if (date.contains(":")) {
+            // Already in timestamp format
+            return date;
+        }
+        
+        // Old format without timestamp - add default midnight time
+        // Example: "Sun, Nov 09, 2025" → "Sun, Nov 09, 2025 00:00:00"
+        return date + " 00:00:00";
+    }
+
+    /**
      * Import entries from a CSV file at the specified URI.
      * Uses Storage Access Framework for modern, permission-less file access.
+     * Handles both old format (date only) and new format (date with timestamp).
      * 
      * @param uri URI of the CSV file to import (from file picker)
      */
@@ -376,6 +401,9 @@ public class EntryGroupsFragment extends Fragment{
                         Log.w(TAG, "Skipping row with invalid amount: " + amount);
                         continue;
                     }
+                    
+                    // Convert old date format to new format with timestamp if needed
+                    date = convertDateToTimestampFormat(date);
                     
                     // Create and insert entry
                     JournalEntry entry = new JournalEntry();

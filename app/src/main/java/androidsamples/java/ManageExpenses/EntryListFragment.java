@@ -23,8 +23,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -37,13 +39,23 @@ public class EntryListFragment extends Fragment {
   private String group;
   private double grp_total = 0;
   private TextView tv;
+  private EntryListAdapter adapter;
+  private boolean sortDescending = true; // Default: newest first (descending)
 
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setHasOptionsMenu(true);
     mAppViewModel = new ViewModelProvider(this).get(AppViewModel.class);
-    group = EntryListFragmentArgs.fromBundle(getArguments()).getGroup();
+    
+    // Safely extract navigation arguments with null check
+    Bundle args = getArguments();
+    if (args != null) {
+      group = EntryListFragmentArgs.fromBundle(args).getGroup();
+    } else {
+      Log.e(TAG, "No arguments passed to EntryListFragment, using default group");
+      group = "Default";
+    }
   }
 
   @Nullable
@@ -57,10 +69,10 @@ public class EntryListFragment extends Fragment {
 
     RecyclerView entriesList = view.findViewById(R.id.recyclerView);
     entriesList.setLayoutManager(new LinearLayoutManager(getActivity()));
-    EntryListAdapter adapter = new EntryListAdapter(getActivity());
+    adapter = new EntryListAdapter(getActivity());
     entriesList.setAdapter(adapter);
 
-    mAppViewModel.getAllEntriesOfGroup(group).observe(requireActivity(), adapter::setEntries);
+    mAppViewModel.getAllEntriesOfGroup(group).observe(getViewLifecycleOwner(), adapter::setEntries);
     return view;
   }
 
@@ -84,6 +96,12 @@ public class EntryListFragment extends Fragment {
   public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
     inflater.inflate(R.menu.fragment_entry_list, menu);
+    
+    // Set initial menu item title and icon based on default sort order
+    MenuItem sortItem = menu.findItem(R.id.menu_sort_entries);
+    if (sortItem != null) {
+      updateSortMenuItem(sortItem);
+    }
   }
 
   @Override
@@ -101,8 +119,36 @@ public class EntryListFragment extends Fragment {
       });
       alert.setNegativeButton(android.R.string.no, (dialog, which) -> dialog.dismiss());
       alert.show();
+      return true;
+    } else if (item.getItemId() == R.id.menu_sort_entries) {
+      sortDescending = !sortDescending; // Toggle sort order
+      
+      // Update menu item title and icon to reflect current sort order
+      updateSortMenuItem(item);
+      
+      // Re-sort and refresh the list
+      if (adapter != null) {
+        adapter.refreshSorting();
+      }
+      return true;
     }
     return super.onOptionsItemSelected(item);
+  }
+
+  /**
+   * Updates the sort menu item's title and icon based on current sort order.
+   * @param sortItem The menu item to update
+   */
+  private void updateSortMenuItem(MenuItem sortItem) {
+    if (sortDescending) {
+      // Descending: Newest first (down arrow - newer dates at top)
+      sortItem.setTitle("Sort: Newest First");
+      sortItem.setIcon(R.drawable.ic_sort_descending);
+    } else {
+      // Ascending: Oldest first (up arrow - older dates at top)
+      sortItem.setTitle("Sort: Oldest First");
+      sortItem.setIcon(R.drawable.ic_sort_ascending);
+    }
   }
 
   interface Callbacks {
@@ -131,13 +177,14 @@ public class EntryListFragment extends Fragment {
       mCallbacks.onEntrySelected(mEntry.getUid(), true, group);
     }
 
-    void bind(JournalEntry entry) {
-      mEntry = entry;
-      this.mTxtTitle.setText(mEntry.getText());
-      this.mDate.setText(mEntry.getDate());
-      this.mGroup.setText(mEntry.getGroup());
-      this.mAmount.setText(String.valueOf(mEntry.getAmount()));
-    }
+      void bind(JournalEntry entry) {
+        mEntry = entry;
+        this.mTxtTitle.setText(mEntry.getText());
+        // Display only date (not timestamp) to user
+        this.mDate.setText(mEntry.getFormattedDate());
+        this.mGroup.setText(mEntry.getGroup());
+        this.mAmount.setText(String.format(Locale.US, "%.2f", mEntry.getAmount()));
+      }
   }
 
   private class EntryListAdapter extends RecyclerView.Adapter<EntryViewHolder> {
@@ -170,14 +217,55 @@ public class EntryListFragment extends Fragment {
 
     @SuppressLint("NotifyDataSetChanged")
     public void setEntries(List<JournalEntry> entries) {
-      mEntries = entries;
-      Collections.sort(mEntries, new EntryComparator());
-      grp_total = 0;
-      for(int i = 0 ; i < entries.size() ; i++ ){
-        grp_total += entries.get(i).getAmount();
-      }
-      tv.setText(String.valueOf(grp_total));
+      // Create a mutable copy of the list from LiveData so we can sort it
+      mEntries = new ArrayList<>(entries);
+      sortEntries();
+      calculateTotal();
       notifyDataSetChanged();
+    }
+    
+    /**
+     * Re-sorts the current list based on the sort order and refreshes the view.
+     * Called when user toggles sort order.
+     */
+    @SuppressLint("NotifyDataSetChanged")
+    public void refreshSorting() {
+      if (mEntries != null && !mEntries.isEmpty()) {
+        sortEntries();
+        notifyDataSetChanged();
+      }
+    }
+    
+    /**
+     * Sorts entries based on the current sort order.
+     * Descending (default): Newest entries first
+     * Ascending: Oldest entries first
+     */
+    private void sortEntries() {
+      if (mEntries == null || mEntries.isEmpty()) {
+        return;
+      }
+      
+      if (sortDescending) {
+        // Sort descending (newest first) - reverse the normal order
+        Collections.sort(mEntries, Collections.reverseOrder(new EntryComparator()));
+      } else {
+        // Sort ascending (oldest first) - normal order
+        Collections.sort(mEntries, new EntryComparator());
+      }
+    }
+    
+    /**
+     * Calculates and displays the total amount for all entries.
+     */
+    private void calculateTotal() {
+      grp_total = 0;
+      if (mEntries != null) {
+        for (JournalEntry entry : mEntries) {
+          grp_total += entry.getAmount();
+        }
+      }
+      tv.setText(String.format(Locale.US, "%.2f", grp_total));
     }
   }
 

@@ -49,12 +49,21 @@ public class EntryDetailsFragment extends Fragment {
 
     mAppViewModel = new ViewModelProvider(requireActivity()).get(AppViewModel.class);
 
-    UUID entryId = EntryDetailsFragmentArgs.fromBundle(getArguments()).getEntryId();
-    edit = EntryDetailsFragmentArgs.fromBundle(getArguments()).getEdit();
-    group = EntryDetailsFragmentArgs.fromBundle(getArguments()).getGroup();
-    Log.d(TAG, "Loading entry: " + entryId);
+    // Safely extract navigation arguments with null check
+    Bundle args = getArguments();
+    if (args != null) {
+      EntryDetailsFragmentArgs fragmentArgs = EntryDetailsFragmentArgs.fromBundle(args);
+      UUID entryId = fragmentArgs.getEntryId();
+      edit = fragmentArgs.getEdit();
+      group = fragmentArgs.getGroup();
+      Log.d(TAG, "Loading entry: " + entryId);
 
-    if(edit) mAppViewModel.loadEntry(entryId);
+      if(edit) mAppViewModel.loadEntry(entryId);
+    } else {
+      Log.e(TAG, "No arguments passed to EntryDetailsFragment, using defaults");
+      edit = false;
+      group = "Default";
+    }
   }
 
   @Nullable
@@ -108,15 +117,16 @@ public class EntryDetailsFragment extends Fragment {
   public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     if(edit) {
-      mAppViewModel.getEntryLiveData().observe(requireActivity(),
+      mAppViewModel.getEntryLiveData().observe(getViewLifecycleOwner(),
               entry -> {
                 this.mEntry = entry;
                 if (entry != null) updateUI();
               });
     }
     else{
+      // Set current date with timestamp for new entries
       Calendar cal = Calendar.getInstance();
-      SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, MMM dd, yyyy", Locale.getDefault());
+      SimpleDateFormat simpleDateFormat = new SimpleDateFormat(JournalEntry.DATE_TIME_FORMAT, Locale.US);
       mEditDate.setText(simpleDateFormat.format(cal.getTime()));
     }
   }
@@ -151,6 +161,7 @@ public class EntryDetailsFragment extends Fragment {
 
   private void updateUI() {
     mEditTitle.setText(mEntry.getText());
+    // Store the full timestamp in the button, but display only date to user
     mEditDate.setText(mEntry.getDate());
     double amt = mEntry.getAmount();
     if(amt > 0) mAmount.setText(String.valueOf(amt));

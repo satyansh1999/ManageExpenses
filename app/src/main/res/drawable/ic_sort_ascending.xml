@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sort Ascending Icon: Up arrow (Oldest First / A to Z) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M3,4h10v2H3V4zM3,11h7v2H3V11zM3,18h4v2H3V18zM16,7v11.17l3.59,-3.59L21,16l-5,5l-5,-5l1.41,-1.42L16,18.17V7H16z"/>
+</vector>

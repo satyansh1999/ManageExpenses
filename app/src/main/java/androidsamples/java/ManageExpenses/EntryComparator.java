@@ -10,13 +10,18 @@ import java.util.HashMap;
 import java.util.Locale;
 
 /**
- * Comparator for sorting JournalEntry objects by date.
- * Handles malformed dates gracefully to prevent crashes.
+ * Comparator for sorting JournalEntry objects by date with timestamp.
+ * Handles both new format (with timestamp) and legacy format (date only).
+ * Uses Locale.US to match the date format used in JournalEntry.
  */
 public class EntryComparator implements Comparator<JournalEntry> {
     private static final String TAG = "EntryComparator";
+    // Primary format: Date with timestamp for precise sorting
+    private static final SimpleDateFormat DATE_TIME_FORMAT = 
+        new SimpleDateFormat(JournalEntry.DATE_TIME_FORMAT, Locale.US);
+    // Legacy format: Date only (for backward compatibility)
     private static final SimpleDateFormat DATE_FORMAT = 
-        new SimpleDateFormat("EEE, MMM dd, yyyy", Locale.US);
+        new SimpleDateFormat(JournalEntry.DATE_DISPLAY_FORMAT, Locale.US);
     
     private final HashMap<String, Integer> monthMap = new HashMap<>();
 
@@ -50,15 +55,24 @@ public class EntryComparator implements Comparator<JournalEntry> {
         if (date1 == null) return -1;
         if (date2 == null) return 1;
         
-        // Try parsing with SimpleDateFormat first (most robust)
+        // Try parsing with timestamp format first (new format)
         try {
-            Date d1 = DATE_FORMAT.parse(date1);
-            Date d2 = DATE_FORMAT.parse(date2);
+            Date d1 = DATE_TIME_FORMAT.parse(date1);
+            Date d2 = DATE_TIME_FORMAT.parse(date2);
             if (d1 != null && d2 != null) {
                 return d1.compareTo(d2);
             }
         } catch (ParseException e) {
-            Log.w(TAG, "Date parse failed, trying manual parsing: " + date1 + ", " + date2);
+            // Not in timestamp format, try date-only format (legacy)
+            try {
+                Date d1 = DATE_FORMAT.parse(date1);
+                Date d2 = DATE_FORMAT.parse(date2);
+                if (d1 != null && d2 != null) {
+                    return d1.compareTo(d2);
+                }
+            } catch (ParseException ex) {
+                Log.w(TAG, "Date parse failed for both formats, trying manual parsing: " + date1 + ", " + date2);
+            }
         }
         
         // Fallback to manual parsing with safety checks
