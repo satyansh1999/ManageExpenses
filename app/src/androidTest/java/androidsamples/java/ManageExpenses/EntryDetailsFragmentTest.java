@@ -30,7 +30,7 @@ public class EntryDetailsFragmentTest {
         ApplicationProvider.getApplicationContext());
 
     FragmentScenario<EntryListFragment> entryDetailsFragmentFragmentScenario
-        = FragmentScenario.launchInContainer(EntryListFragment.class, null, R.style.Theme_JournalApp, (FragmentFactory) null);
+        = FragmentScenario.launchInContainer(EntryListFragment.class, null, R.style.Theme_ManageExpenses, (FragmentFactory) null);
 
     entryDetailsFragmentFragmentScenario.onFragment(fragment -> {
       // Set the graph on the TestNavHostController

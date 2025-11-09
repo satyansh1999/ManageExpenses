@@ -100,12 +100,32 @@ public class EntryGroupsFragment extends Fragment{
         EntryListAdapter adapter = new EntryListAdapter();
         entriesList.setAdapter(adapter);
 
-        // Observe groups and submit to adapter (DiffUtil handles the diff)
-        mAppViewModel.getAllGroups().observe(getViewLifecycleOwner(), groups -> {
-            // Reverse list to show newest groups first
-            List<String> reversed = new ArrayList<>(groups);
-            Collections.reverse(reversed);
-            adapter.submitList(reversed);
+        // Observe groups (placeholder entries) and submit to adapter sorted by date
+        mAppViewModel.getAllGroups().observe(getViewLifecycleOwner(), placeholderEntries -> {
+            // Remove duplicates (keep only one placeholder per group - the newest one)
+            // This handles cases where there might be multiple placeholders for same group
+            List<JournalEntry> uniquePlaceholders = new ArrayList<>();
+            java.util.Set<String> seenGroups = new java.util.HashSet<>();
+            
+            // Sort placeholders by date descending (newest first) using EntryComparator
+            List<JournalEntry> sortedPlaceholders = new ArrayList<>(placeholderEntries);
+            sortedPlaceholders.sort(Collections.reverseOrder(new EntryComparator()));
+            
+            // Keep only first occurrence of each group (which is the newest due to sorting)
+            for (JournalEntry entry : sortedPlaceholders) {
+                if (!seenGroups.contains(entry.getGroup())) {
+                    uniquePlaceholders.add(entry);
+                    seenGroups.add(entry.getGroup());
+                }
+            }
+            
+            // Extract group names in date-sorted order
+            List<String> sortedGroupNames = new ArrayList<>();
+            for (JournalEntry entry : uniquePlaceholders) {
+                sortedGroupNames.add(entry.getGroup());
+            }
+            
+            adapter.submitList(sortedGroupNames);
         });
         return view;
     }
@@ -261,14 +281,9 @@ public class EntryGroupsFragment extends Fragment{
                     // Write CSV header
                     writer.write("Group,Date,Amount,Description\n");
                     
-                    // Write entries
+                    // Write entries (including placeholder/group header entries)
                     int exportCount = 0;
                     for (JournalEntry entry : journalEntries) {
-                        // Skip placeholder entries
-                        if ("_".equals(entry.getText())) {
-                            continue;
-                        }
-                        
                         // Escape group field for CSV (handle commas, quotes, newlines)
                         String group = entry.getGroup();
                         if (group.contains(",") || group.contains("\"") || group.contains("\n")) {
@@ -397,32 +412,56 @@ public class EntryGroupsFragment extends Fragment{
                     double amount = Double.parseDouble(amountStr);
                     
                     // Validate required fields
-                    if (group.isEmpty() || date.isEmpty() || description.isEmpty()) {
+                    if (group.isEmpty() || date.isEmpty()) {
                         skipCount++;
                         Log.w(TAG, "Skipping row with empty required fields. Group: '" + group + 
-                            "', Date: '" + date + "', Desc: '" + description + "'");
-                        continue;
-                    }
-                    
-                    if (amount <= 0) {
-                        skipCount++;
-                        Log.w(TAG, "Skipping row with invalid amount: " + amount);
+                            "', Date: '" + date + "'");
                         continue;
                     }
                     
                     // Convert old date format to new format with timestamp if needed
                     date = convertDateToTimestampFormat(date);
                     
-                    // Create and insert entry
-                    JournalEntry entry = new JournalEntry();
-                    entry.setGroup(group);
-                    entry.setDate(date);
-                    entry.setAmount(amount);
-                    entry.setText(description);
+                    // Check if this is a placeholder/group header entry
+                    boolean isPlaceholder = "_".equals(description) && amount == 0.0;
                     
-                    mAppViewModel.insert(entry);
-                    importCount++;
-                    Log.d(TAG, "Successfully imported: " + group + " / " + date + " / " + amount);
+                    if (isPlaceholder) {
+                        // This is a group header entry - use it to establish group sort order
+                        // Create placeholder entry to maintain group ordering by date
+                        JournalEntry entry = new JournalEntry();
+                        entry.setGroup(group);
+                        entry.setDate(date);
+                        entry.setAmount(0.0);
+                        entry.setText("_");
+                        
+                        mAppViewModel.insert(entry);
+                        importCount++;
+                        Log.d(TAG, "Imported group header: " + group + " / " + date);
+                    } else {
+                        // Regular expense entry - validate it has description and positive amount
+                        if (description.isEmpty()) {
+                            skipCount++;
+                            Log.w(TAG, "Skipping entry with empty description in group: " + group);
+                            continue;
+                        }
+                        
+                        if (amount <= 0) {
+                            skipCount++;
+                            Log.w(TAG, "Skipping entry with invalid amount: " + amount + " in group: " + group);
+                            continue;
+                        }
+                        
+                        // Create and insert regular entry
+                        JournalEntry entry = new JournalEntry();
+                        entry.setGroup(group);
+                        entry.setDate(date);
+                        entry.setAmount(amount);
+                        entry.setText(description);
+                        
+                        mAppViewModel.insert(entry);
+                        importCount++;
+                        Log.d(TAG, "Successfully imported: " + group + " / " + date + " / " + amount);
+                    }
                     
                 } catch (NumberFormatException e) {
                     skipCount++;

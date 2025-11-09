@@ -26,8 +26,8 @@ public interface JournalEntryDAO {
     @Query("SELECT * from diary_table where `group`=(:grp) and text != '_'")
     LiveData<List<JournalEntry>> getAllEntriesOfGroup(String grp);
 
-    @Query("SELECT DISTINCT `group` from diary_table")
-    LiveData<List<String>> getAllGroups();
+    @Query("SELECT * from diary_table where text == '_' and amount == 0.0")
+    LiveData<List<JournalEntry>> getAllGroups();
 
     @Query("SELECT * from diary_table")
     LiveData<List<JournalEntry>> getAllEntries();
