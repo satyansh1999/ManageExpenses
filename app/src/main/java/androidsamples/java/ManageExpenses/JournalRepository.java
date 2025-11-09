@@ -16,10 +16,18 @@ public class JournalRepository {
     private final Executor mExecutor = Executors.newSingleThreadExecutor();
 
     private JournalRepository(Context context) {
-        JournalRoomDatabase db
-                = Room.databaseBuilder(context.getApplicationContext(),
+        JournalRoomDatabase db = Room.databaseBuilder(
+                context.getApplicationContext(),
                 JournalRoomDatabase.class,
-                DATABASE_NAME).build();
+                DATABASE_NAME)
+                // Register migrations here when you increment the database version
+                // Example: .addMigrations(JournalRoomDatabase.MIGRATION_1_2)
+                // Example: .addMigrations(JournalRoomDatabase.MIGRATION_1_2, JournalRoomDatabase.MIGRATION_2_3)
+                //
+                // NEVER use fallbackToDestructiveMigration() in production - it deletes user data!
+                // Only use it during development if you don't care about data loss.
+                // .fallbackToDestructiveMigration() // DANGER: Deletes all data on version conflict
+                .build();
         mJournalEntryDao = db.journalEntryDao();
     }
 
